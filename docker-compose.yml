@@ -1,18 +1,17 @@
 version: '3'
 services:
-  mysql:
-    image: mysql:8.0
+  postgres:
+    image: postgres:14
     volumes:
-      - database:/var/lib/mysql
+      - database:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
-      MYSQL_ROOT_PASSWORD: P@ssw0rd
-      MYSQL_USER: player_user
-      MYSQL_PASSWORD: player_user_password
-      MYSQL_DATABASE: player
+      POSTGRES_USER: player_user
+      POSTGRES_PASSWORD: player_user_password
+      POSTGRES_DB: player
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pP@ssw0rd" ]
+      test: [ "CMD-SHELL", "pg_isready -U player_user" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -24,9 +23,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mysql
+      - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/player
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/player
       SPRING_DATASOURCE_USERNAME: player_user
       SPRING_DATASOURCE_PASSWORD: player_user_password
 
