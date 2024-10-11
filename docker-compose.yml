@@ -1,0 +1,34 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - database:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
+      MYSQL_USER: player_user
+      MYSQL_PASSWORD: player_user_password
+      MYSQL_DATABASE: player
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pP@ssw0rd" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  rest-service:
+    build:
+      context: ./rest-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/player
+      SPRING_DATASOURCE_USERNAME: player_user
+      SPRING_DATASOURCE_PASSWORD: player_user_password
+
+volumes:
+  database:
