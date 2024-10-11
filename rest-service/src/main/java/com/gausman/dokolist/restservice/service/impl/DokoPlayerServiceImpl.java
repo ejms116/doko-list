@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class DokoDokoPlayerServiceImpl implements DokoPlayerService {
+public class DokoPlayerServiceImpl implements DokoPlayerService {
     @Autowired
     DokoPlayerRepository dokoPlayerRepository;
 
