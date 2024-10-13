@@ -1,11 +1,12 @@
 package com.gausman.dokolist.restservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Setter
@@ -17,4 +18,8 @@ public class DokoPlayer {
 
     private String name;
     private String email;
+
+    @ManyToMany(mappedBy = "players")
+    @JsonIgnore
+    private Set<DokoGroup> groups = new HashSet<>();
 }
