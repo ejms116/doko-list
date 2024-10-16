@@ -98,7 +98,7 @@ export default function SessionPage({ params }: {
 					</tbody>
 				</table>
 			</div>
-			<Modal/>
+			
 		</div>
 		
 	);
