@@ -1,6 +1,8 @@
 import GroupRow from "./group-row";
 import { GroupRowProps } from "./group-row";
 
+import Link from "next/link";
+
 // Example data
 const rowData: GroupRowProps[] = [
   { name: 'Doko-Telgte', member: ['Yannick', 'Daniel', 'Hendrik', 'Matze', 'Erik'], founded: new Date('2009-10-01'), session_count: 126, leader: 'Erik' },

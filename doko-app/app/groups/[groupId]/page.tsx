@@ -1,6 +1,6 @@
 import SessionRow from "./session-row";
 import { SessionRowProps } from "./session-row";
-import GreenRedCell from "../../ui/green-red-cell";
+import GreenRedCellSum from "../../ui/green-red-cell-sum";
 
 const groups = [
 	{
@@ -69,11 +69,11 @@ export default function GroupPage({ params }: {
 		
 						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
 							<th className="py-3 px-6 text-left"></th>
-							<GreenRedCell score={sumData.p1} />
-							<GreenRedCell score={sumData.p2} />
-							<GreenRedCell score={sumData.p3} />
-							<GreenRedCell score={sumData.p4} />
-							<GreenRedCell score={sumData.p5} />
+							<GreenRedCellSum score={sumData.p1} />
+							<GreenRedCellSum score={sumData.p2} />
+							<GreenRedCellSum score={sumData.p3} />
+							<GreenRedCellSum score={sumData.p4} />
+							<GreenRedCellSum score={sumData.p5} />
 							<th className="py-3 px-6 text-left"></th>
 							<th className="py-3 px-6 text-left"></th>
 						</tr>
