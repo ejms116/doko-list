@@ -12,6 +12,8 @@ export interface GameRowProps {
     ansagen_contra: string;
     sonderpunkte_re: string;
     sonderpunkte_contra: string;
+    //setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
 export interface PlayerProps {
@@ -19,7 +21,7 @@ export interface PlayerProps {
     party: string;
 }
 
-const GameRow: React.FC<{ data: GameRowProps }> = ({ data }) => {
+const GameRow: React.FC<{ data: GameRowProps, setOpen: React.Dispatch<React.SetStateAction<boolean>> }> = ({ data, setOpen }) => {
     return (
         <tr key={data.id} className="border-b border-gray-600 hover:bg-[#3B3B4D]">
             <td className="py-3 px-6 text-center">{data.id}</td>
@@ -64,12 +66,10 @@ const GameRow: React.FC<{ data: GameRowProps }> = ({ data }) => {
                 </span>
             </td>
             <td className="py-3 px-6 text-center">
-                <Link href={'1/games/1'}>
-                    <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700">
+                    <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700" onClick={() => setOpen(true)}>
 
                         Edit Game
                     </button> 
-                </Link>
             </td>
         </tr>
     );

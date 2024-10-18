@@ -1,8 +1,22 @@
+'use client'
+
+import { useState } from "react";
+
 import GameRow from "./game-row";
 import { GameRowProps } from "./game-row";
 import { PlayerProps } from "./game-row";
 import GreenRedCellSum from "../../../../ui/green-red-cell-sum";
 import Modal from "../../../../ui/modal";
+
+import PlayerColumn from "./player-column";
+import ResultColumn from "./result-column";
+import AnsagenColumn from "./ansagen-column";
+import SonderpunkteColumn from "./sonderpunkte-column";
+
+import { AnsagenColumnProps } from "./ansagen-column";
+import { PlayerColumnProps } from "./player-column";
+import { Team } from "./player-column";
+import { PlayerData } from "./player-column";
 
 const rowData: GameRowProps[] = [
 	{
@@ -43,6 +57,13 @@ const sumData = rowData.reduce(
 	{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
 )
 
+const ansagenData: AnsagenColumnProps[] = [
+	{title: 'Ansagen'},
+	{title: 'Vorab'},
+]
+
+
+
 
 export default function SessionPage({ params }: {
 	params: {
@@ -50,10 +71,39 @@ export default function SessionPage({ params }: {
 		sessionId: string
 	}
 }) {
+	const [gameDetailOpen, setGameDetailOpen] = useState(false)
+
+	const [players, setPlayers] = useState<PlayerData[]>(() => {
+		const initialPlayers: PlayerData[] = [
+			{ id: 1, name: 'Yannick', team: Team.None },
+			{ id: 2, name: 'Daniel', team: Team.Contra },
+			{ id: 3, name: 'Hendrik', team: Team.Contra },
+			{ id: 4, name: 'Matze', team: Team.Re },
+			{ id: 5, name: 'Erik', team: Team.Re },
+		]
+	
+		return initialPlayers;
+	  });
+
+	// const addPlayer = (player: PlayerData) => {
+	// 	setPlayers((prevPlayers) => [...prevPlayers, player]);
+	// };
+
+	// const changePlayerTeam = (id: number, newTeam: Team) => {
+	// 	setPlayers((prevPlayers) =>
+	// 	  prevPlayers.map((player) =>
+	// 		player.id === id ? { ...player, team: newTeam } : player
+	// 	  )
+	// 	);
+	// };
+
+	const playerData: PlayerColumnProps = {
+		player: players,
+	}
+
 	return (
+
 		<div className="overflow-x-auto">
-
-
 			<h1>GroupId: {params.groupId}, SessionId: {params.sessionId} </h1>
 			<h1>List games...</h1>
 			<div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
@@ -92,14 +142,26 @@ export default function SessionPage({ params }: {
 						</tr>
 					</thead>
 					<tbody className="text-gray-300 text-sm">
-						{ rowData.map((row, index) => 
-							<GameRow key={row.id} data={row} />
-						) }
+						{rowData.map((row, index) =>
+							<GameRow key={row.id} data={row} setOpen={setGameDetailOpen} />
+						)}
 					</tbody>
 				</table>
 			</div>
-			
-		</div>
+			<Modal open={gameDetailOpen} onClose={() => setGameDetailOpen(false)}>
+				<div className="grid grid-cols-5 gap-4 bg-[#2A2A3C] p-4 rounded-lg shadow-md text-gray-200">
+					{/* Headers */}
+					<PlayerColumn data={players} setPlayers={setPlayers} />
+					<ResultColumn />
+					<AnsagenColumn data={ansagenData[0]} />
+					<AnsagenColumn data={ansagenData[1]} />
+	
+					<SonderpunkteColumn />
 		
+				</div>
+
+			</Modal>
+		</div>
+
 	);
 }

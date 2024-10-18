@@ -29,19 +29,19 @@ export default function App() {
 
       <Modal open={open} onClose={() => setOpen(false)}>
         <div className="text-center w-56">
-          <div className="mx-auto my-4 w-48">
-            <h3 className="text-lg font-black text-gray-800">Confirm Delete</h3>
-            <p className="text-sm text-gray-500">
-              Are you sure you want to delete this item?
-            </p>
+            <div className="mx-auto my-4 w-48">
+              <h3 className="text-lg font-black text-gray-800">Confirm Delete</h3>
+              <p className="text-sm text-gray-500">
+                Are you sure you want to delete this item?
+              </p>
+            </div>
+            <div className="flex justify-center gap-4">
+              <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700">Delete</button>
+              <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700" onClick={() => setOpen(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
-          <div className="flex justify-center gap-4">
-            <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700">Delete</button>
-            <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700" onClick={() => setOpen(false)}>
-              Cancel
-            </button>
-          </div>
-        </div>
       </Modal>
     </main>
   )
