@@ -1,16 +1,16 @@
 import React from 'react';
 import PlayerCell from './player-cell';
 
-export enum Team{
-	Re,
-	Contra,
-	None
+export enum Team {
+    Re,
+    Contra,
+    None
 }
 
 export interface PlayerData {
-	id: number;
+    id: number;
     name: string;
-	team: Team;
+    team: Team;
 
 }
 
@@ -28,9 +28,25 @@ const PlayerColumn: React.FC<{ data: PlayerData[], setPlayers: React.Dispatch<Re
 
     return (
         <div className="grid grid-cols-2 grid-flow-row">
+
+
+
             {/* Header for Player */}
             <div className="col-span-2 text-lg font-bold">Players</div>
-            <div className="col-span-2 text-lg font-bold"></div>
+
+            <div className="col-span-2 bg-[#2A2A3C] p-4 shadow-md rounded-lg">
+                    <select
+                        id="options"
+                        className="block w-full bg-[#1E1E2C] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                    >
+                        <option value="normal">Normal</option>
+                        <option value="solo">Solo</option>
+                        <option value="hochzeit">Hochzeit</option>
+                    </select>
+                </div>
+
+
+          
 
 
             {/* Player names and "Re" */}

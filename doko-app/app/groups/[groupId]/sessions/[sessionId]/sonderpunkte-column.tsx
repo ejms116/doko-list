@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Dulle, Fuchs, Charlie, Check, Fail, End, SpiderWeb, DoubleExlamationMark, ExplodingHead, Plus, Minus } from '../../../../ui/cards';
+import { Dulle, Fuchs, Charlie, Check, Fail, End, SpiderWeb, DoubleExlamationMark, ExplodingHead, Plus, Minus, Checkbox } from '../../../../ui/cards';
 
 const SonderpunkteColumn: React.FC = () => {
   return (
@@ -14,78 +14,115 @@ const SonderpunkteColumn: React.FC = () => {
       <div className="text-center">Contra</div>
 
       {/* Empty fields for Sonderpunkte */}
-      <React.Fragment>
+      
 
 
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+          <Checkbox />
+    
+        </div>
         <div className="text-center">
           <Fuchs />
           <SpiderWeb />
         </div>
-        <div className="text-center">b</div>
+        <div className="text-center">
+          <Checkbox />
+          <Checkbox />
+        </div>
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
         <div className="text-center">
           <Fuchs />
           <Fuchs />
           <Check />
         </div>
-        <div className="text-center">b</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
         <div className="text-center">
           <Fuchs />
           <Fuchs />
           <Fail />
         </div>
-        <div className="text-center">b</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
         <div className="text-center">
           <Fuchs />
           <End />
         </div>
-        <div className="text-center">b</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
         <div className="text-center">
           <Dulle />
           <SpiderWeb />
         </div>
-        <div className="text-center">b</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
         <div className="text-center">
           <Charlie />
           <Check />
         </div>
-        <div className="text-center">b</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
 
-        <div className="text-center">a</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
         <div className="text-center">
           <Charlie />
           <Fail />
         </div>
-        <div>sd</div>
+        <div className="text-center">
+          <Checkbox />
+        </div>
+
+
+
+
+        <div className="text-center">
+          <Checkbox />
+          <Checkbox />
+          <Checkbox />
+          <Checkbox />
+
+        </div>
+        <div className="text-center">
+          <ExplodingHead />
+          <ExplodingHead />
+        </div>
+        <div className="text-center">
+          <Checkbox />
+          <Checkbox />
+          <Checkbox />
+          <Checkbox />
+       
+        </div>
+
      
-
-        <div className="text-center">
-          <Plus />
-          <span>0</span>
-          <Minus />
-        </div>
-        <div className="text-center">
-          <ExplodingHead />
-          <ExplodingHead />
-        </div>
-        <div className="text-center">
-          <Plus />
-          <span>0</span>
-          <Minus />
-        </div>
-
-      </React.Fragment>
     </div>
   );
 };

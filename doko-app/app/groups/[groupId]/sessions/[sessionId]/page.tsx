@@ -102,7 +102,6 @@ export default function SessionPage({ params }: {
 	}
 
 	return (
-
 		<div className="overflow-x-auto">
 			<h1>GroupId: {params.groupId}, SessionId: {params.sessionId} </h1>
 			<h1>List games...</h1>

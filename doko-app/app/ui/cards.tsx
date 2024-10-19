@@ -70,5 +70,16 @@ const Minus = () => {
     )
 }
 
+const Checkbox = () => {
+    return (
+        <input
+            type="checkbox"
+            className="form-checkbox h-5 w-5 text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring focus:ring-blue-600 focus:ring-opacity-50"
+          />
+    )
+}
 
-export { Fuchs, Dulle, Charlie, Check, Fail, End, SpiderWeb, DoubleExlamationMark, ExplodingHead, Plus, Minus };
+
+
+
+export { Fuchs, Dulle, Charlie, Check, Fail, End, SpiderWeb, DoubleExlamationMark, ExplodingHead, Plus, Minus, Checkbox };
