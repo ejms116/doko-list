@@ -20,7 +20,7 @@ const ResultColumn: React.FC = () => {
 
 
     return (
-        <div className="grid grid-cols-2 ">
+        <div className="grid grid-cols-2">
             {/* Header for Result */}
             <div className="col-span-2 text-lg font-bold text-center">Result</div>
             <div>

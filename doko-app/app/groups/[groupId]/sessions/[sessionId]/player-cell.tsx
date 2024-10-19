@@ -36,9 +36,9 @@ const PlayerCell: React.FC<{data: PlayerData, setPlayers: React.Dispatch<React.S
         
 
     return (
-        <div className="grid grid-cols-2 grid-flow-row">
+        <div className="grid grid-cols-2 grid-flow-row col-span-2">
             <div className="text-left">{data.data.name}</div>
-            <button className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-centerh`} onClick={() => onClick()}>
+            <button className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center`} onClick={() => onClick()}>
                 <span className={`${dynamic_class_name}`}>{party_emoji}{' '}{Team[data.data.team]}</span>
             </button>
         </div>

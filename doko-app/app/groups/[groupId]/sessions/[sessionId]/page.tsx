@@ -149,7 +149,7 @@ export default function SessionPage({ params }: {
 				</table>
 			</div>
 			<Modal open={gameDetailOpen} onClose={() => setGameDetailOpen(false)}>
-				<div className="grid grid-cols-5 gap-4 bg-[#2A2A3C] p-4 rounded-lg shadow-md text-gray-200">
+				<div className="grid grid-cols-5 gap-3 bg-[#2A2A3C] p-4 rounded-lg shadow-md text-gray-200">
 					{/* Headers */}
 					<PlayerColumn data={players} setPlayers={setPlayers} />
 					<ResultColumn />

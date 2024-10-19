@@ -27,9 +27,11 @@ const PlayerColumn: React.FC<{ data: PlayerData[], setPlayers: React.Dispatch<Re
     const dynamic_emoji = <span className="text-black">{party_emoji}</span>
 
     return (
-        <div>
+        <div className="grid grid-cols-2 grid-flow-row">
             {/* Header for Player */}
             <div className="col-span-2 text-lg font-bold">Players</div>
+            <div className="col-span-2 text-lg font-bold"></div>
+
 
             {/* Player names and "Re" */}
             {data.map((player) => (
