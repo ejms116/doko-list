@@ -1,6 +1,7 @@
 package com.gausman.dokolist.restservice.controller;
 
 import com.gausman.dokolist.restservice.dto.AddPlayersToGroupRequest;
+import com.gausman.dokolist.restservice.dto.CreateGroupRequest;
 import com.gausman.dokolist.restservice.model.DokoGroup;
 import com.gausman.dokolist.restservice.model.DokoPlayer;
 import com.gausman.dokolist.restservice.service.DokoGroupService;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000") // do we need this?
 @RestController
 @RequestMapping("/groups")
 public class DokoGroupController {
@@ -20,6 +22,12 @@ public class DokoGroupController {
     @PostMapping("/add")
     public DokoGroup save(@RequestBody DokoGroup dokoGroup){
         return dokoGroupService.save(dokoGroup);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<DokoGroup> create(@RequestBody CreateGroupRequest createGroupRequest){
+        DokoGroup dokoGroup = dokoGroupService.createGroup(createGroupRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dokoGroup);
     }
 
     @GetMapping("/all")

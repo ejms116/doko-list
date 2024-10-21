@@ -1,14 +1,18 @@
 package com.gausman.dokolist.restservice.service.impl;
 
+import com.gausman.dokolist.restservice.dto.CreateGroupRequest;
 import com.gausman.dokolist.restservice.model.DokoGroup;
 import com.gausman.dokolist.restservice.model.DokoPlayer;
 import com.gausman.dokolist.restservice.repository.DokoGroupRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.service.DokoGroupService;
+import com.gausman.dokolist.restservice.service.DokoPlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DokoGroupServiceImpl implements DokoGroupService {
@@ -33,6 +37,8 @@ public class DokoGroupServiceImpl implements DokoGroupService {
         return dokoGroupRepository.findById(id).orElse(null);
     }
 
+
+
     @Override
     public void addPlayersToGroup(Long groupId, List<Long> playerIds) {
         DokoGroup dokoGroup = dokoGroupRepository.findById(groupId)
@@ -46,6 +52,21 @@ public class DokoGroupServiceImpl implements DokoGroupService {
 
         dokoGroupRepository.save(dokoGroup);  // Save the updated team
 
+    }
+
+    @Override
+    public DokoGroup createGroup(CreateGroupRequest createGroupRequest) {
+        DokoPlayer founder = dokoPlayerRepository.findById(createGroupRequest.getFounderId())
+                .orElseThrow(() -> new RuntimeException("Player not found"));
+
+        Set<DokoPlayer> dokoPlayerSet = new HashSet<>(dokoPlayerRepository.findAllById(createGroupRequest.getPlayerIds()));
+
+        DokoGroup dokoGroup = new DokoGroup();
+        dokoGroup.setName(createGroupRequest.getName());
+        dokoGroup.setFounder(founder);
+        dokoGroup.setPlayers(dokoPlayerSet);
+
+        return dokoGroupRepository.save(dokoGroup);
     }
 
 

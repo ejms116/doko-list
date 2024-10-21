@@ -20,45 +20,32 @@ export interface PlayerData {
 
 //const PlayerColumn: React.FC<{data: PlayerColumnProps}> = ({data}) => {
 const PlayerColumn: React.FC<{ data: PlayerData[], setPlayers: React.Dispatch<React.SetStateAction<PlayerData[]>> }> = ({ data, setPlayers }) => {
-    const dynamic_class_name = 'text-black'
-
-    const party_emoji = String.fromCodePoint(0x2663)
-
-    const dynamic_emoji = <span className="text-black">{party_emoji}</span>
-
     return (
-        <div className="grid grid-cols-2 grid-flow-row">
-
-
+        <div className="grid grid-cols-[auto_auto_auto_auto] place-items-center">
 
             {/* Header for Player */}
-            <div className="col-span-2 text-lg font-bold">Players</div>
-
-            <div className="col-span-2 bg-[#2A2A3C] p-4 shadow-md rounded-lg">
-                    <select
-                        id="options"
-                        className="block w-full bg-[#1E1E2C] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
-                    >
-                        <option value="normal">Normal</option>
-                        <option value="solo">Solo</option>
-                        <option value="hochzeit">Hochzeit</option>
-                    </select>
-                </div>
+            <div className="col-span-1 text-base font-bold text-center">Players</div>
+            <div className="col-span-1 text-base font-bold text-center">Team</div>
+            <div className="col-span-1 text-base font-bold text-center">
+                <span className='p-1'>
+                    Solo
+                </span>
+            </div>
+            <div className="col-span-1 text-base font-bold text-center">Punkte</div>
 
 
-          
+
+            <div className="text-center">&nbsp;</div>
+            <div className="text-center">&nbsp;</div>
+            <div className="text-center">&nbsp;</div>
+            <div className="text-center">&nbsp;</div>
+
+
 
 
             {/* Player names and "Re" */}
             {data.map((player) => (
                 <PlayerCell data={player} setPlayers={setPlayers} />
-                // <React.Fragment key={player.id}>
-                //     <div className="text-left">{player.name}</div>
-                //     <div className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-centerh`}>
-                //         <span className={`${dynamic_class_name}`}>{dynamic_emoji}{' '}</span>
-                //         {Team[player.team]}
-                //     </div>
-                // </React.Fragment>
             ))}
         </div>
 

@@ -18,6 +18,8 @@ import { PlayerColumnProps } from "./player-column";
 import { Team } from "./player-column";
 import { PlayerData } from "./player-column";
 
+import { Checkbox } from "../../../../ui/cards";
+
 const rowData: GameRowProps[] = [
 	{
 		id: 1,
@@ -58,8 +60,8 @@ const sumData = rowData.reduce(
 )
 
 const ansagenData: AnsagenColumnProps[] = [
-	{title: 'Ansagen'},
-	{title: 'Vorab'},
+	{ title: 'Ansagen' },
+	{ title: 'Vorab' },
 ]
 
 
@@ -81,9 +83,9 @@ export default function SessionPage({ params }: {
 			{ id: 4, name: 'Matze', team: Team.Re },
 			{ id: 5, name: 'Erik', team: Team.Re },
 		]
-	
+
 		return initialPlayers;
-	  });
+	});
 
 	// const addPlayer = (player: PlayerData) => {
 	// 	setPlayers((prevPlayers) => [...prevPlayers, player]);
@@ -148,15 +150,59 @@ export default function SessionPage({ params }: {
 				</table>
 			</div>
 			<Modal open={gameDetailOpen} onClose={() => setGameDetailOpen(false)}>
-				<div className="grid grid-cols-5 gap-3 bg-[#2A2A3C] p-4 rounded-lg shadow-md text-gray-200">
+				<div className='grid py-4'>
+					<h1 className='text-lg font-bold py-2'>Neues Spiel hinzufügen</h1>
+					<div className='flex place-items-center gap-3'>
+						<div className='flex place-items-center gap-3'>
+							<span>Spieltyp</span>
+							<select
+								id="options"
+								className="block w-full bg-[#1E1E2C] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 max-w-[150px]"
+							>
+								<option value="normal">Normal</option>
+								<option value="solo">Buben Solo</option>
+								<option value="solo">Damen Solo</option>
+								<option value="solo">Trumpf Solo</option>
+								<option value="hochzeit">Hochzeit</option>
+							</select>
+						</div>
+						<div className='flex place-items-center gap-3'>
+							<span>
+								Herz rumgegangen?
+							</span>
+							<input
+								type="checkbox"
+								className="form-checkbox h-6 w-6 text-blue-500 bg-gray-600 border-gray-500 rounded"
+							/>
+						</div>
+						<div className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}>Bock verbleibend: 5</div>
+					</div>
+				</div>
+
+				
+
+				<div className="grid grid-cols-[auto_auto_auto_auto_auto] gap-4 bg-[#2A2A3C] text-gray-200 items-start">
 					{/* Headers */}
 					<PlayerColumn data={players} setPlayers={setPlayers} />
 					<ResultColumn />
 					<AnsagenColumn data={ansagenData[0]} />
 					<AnsagenColumn data={ansagenData[1]} />
-	
+
 					<SonderpunkteColumn />
-		
+
+				</div>
+				<div>
+					<ul>
+						<li className='text-red-500 text-sm'>Fehler: Anzahl Füchse gefangen größer als 2</li>
+						<li className='text-red-500 text-sm'>Fehler: Ansagen passen nicht zu Vorab-Ansagen</li>
+					</ul>
+				</div>
+				<div className='flex justify-end items-end space-x-4'>
+					<div className='space-x-4'>
+						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700'>Eingaben überprüfen</button>
+						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700'>Spiel hinzufügen</button>
+
+					</div>
 				</div>
 
 			</Modal>

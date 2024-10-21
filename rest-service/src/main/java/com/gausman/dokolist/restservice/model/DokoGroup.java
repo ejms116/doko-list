@@ -3,9 +3,9 @@ package com.gausman.dokolist.restservice.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +18,13 @@ public class DokoGroup {
     private Long id;
 
     private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "founder_id")
+    private DokoPlayer founder;
+
+    @CreationTimestamp
+    private Instant founded;
 
     @ManyToMany
     @JoinTable(

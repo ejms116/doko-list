@@ -53,11 +53,13 @@ const AnsagenColumn: React.FC<{ data: AnsagenColumnProps }> = ({ data }) => {
     return (
         <div className="grid grid-cols-2 ">
             {/* Header for Result */}
-            <div className="col-span-2 text-lg font-bold text-center">{data.title}</div>
+            <div className="col-span-2 text-base font-bold text-center">{data.title}</div>
+            <div className="text-center">&nbsp;</div>
+            <div className="text-center">&nbsp;</div>
             <div>
                 {/* Subheader */}
                 <div className="text-center">
-                    <button className={`${ansageRe ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md`} onClick={() => setAnsageReContra(!ansageRe, ansageContra)}>
+                    <button className={`${ansageRe ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md min-w-[40px]`} onClick={() => setAnsageReContra(!ansageRe, ansageContra)}>
                         Re
                     </button>
                 </div>
@@ -66,7 +68,7 @@ const AnsagenColumn: React.FC<{ data: AnsagenColumnProps }> = ({ data }) => {
                 {/* Result values */}
                 {values.map((value, index) => (
                     <div className="text-center">
-                        <button className={`${weitereAnsage == 1 && winValue <= value ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md`} onClick={() => setStates(1, value)}>
+                        <button className={`${weitereAnsage == 1 && winValue <= value ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md min-w-[40px]`} onClick={() => setStates(1, value)}>
                             {value}
                         </button>
                     </div>
@@ -75,14 +77,14 @@ const AnsagenColumn: React.FC<{ data: AnsagenColumnProps }> = ({ data }) => {
             </div>
             <div>
                 <div className="text-center">
-                    <button className={`${ansageContra ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md`} onClick={() => setAnsageReContra(ansageRe, !ansageContra)}>
-                        Contra
+                    <button className={`${ansageContra ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md min-w-[40px]`} onClick={() => setAnsageReContra(ansageRe, !ansageContra)}>
+                        Co
                     </button>
                 </div>
                 {/* Result values */}
                 {values.map((value, index) => (
                     <div className="text-center">
-                        <button className={`${weitereAnsage == 2 && winValue <= value ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md`} onClick={() => setStates(2, value)}>
+                        <button className={`${weitereAnsage == 2 && winValue <= value ? 'bg-purple-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md min-w-[40px]`} onClick={() => setStates(2, value)}>
                             {value}
                         </button>
                     </div>

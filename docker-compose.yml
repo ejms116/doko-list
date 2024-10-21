@@ -23,6 +23,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
+
   doko-app:
     build:
       context: ./doko-app
@@ -36,6 +37,7 @@ services:
     environment:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
+
 
 volumes:
   database:

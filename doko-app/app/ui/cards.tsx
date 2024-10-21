@@ -70,11 +70,16 @@ const Minus = () => {
     )
 }
 
-const Checkbox = () => {
+interface CheckboxProps {
+    isDisabled: boolean;
+}
+
+const Checkbox: React.FC<CheckboxProps> = ({isDisabled}) => {
     return (
         <input
             type="checkbox"
-            className="form-checkbox h-5 w-5 text-blue-500 bg-gray-600 border-gray-500 rounded focus:ring focus:ring-blue-600 focus:ring-opacity-50"
+            className="form-checkbox h-3 w-3 text-blue-500 bg-gray-600 border-gray-500 rounded"
+            disabled={isDisabled}
           />
     )
 }
