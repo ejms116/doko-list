@@ -1,6 +1,6 @@
 package com.gausman.dokolist.restservice.repository;
 
-import com.gausman.dokolist.restservice.model.DokoGroup;
+import com.gausman.dokolist.restservice.model.entities.DokoGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

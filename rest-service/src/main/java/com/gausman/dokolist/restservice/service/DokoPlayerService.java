@@ -1,6 +1,6 @@
 package com.gausman.dokolist.restservice.service;
 
-import com.gausman.dokolist.restservice.model.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 
 import java.util.List;
 

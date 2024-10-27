@@ -1,8 +1,7 @@
 package com.gausman.dokolist.restservice.service;
 
 import com.gausman.dokolist.restservice.dto.CreateGroupRequest;
-import com.gausman.dokolist.restservice.model.DokoGroup;
-import com.gausman.dokolist.restservice.model.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoGroup;
 
 import java.util.List;
 

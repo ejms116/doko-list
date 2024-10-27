@@ -1,9 +1,9 @@
 package com.gausman.dokolist.restservice.service.impl;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoSessionRequest;
-import com.gausman.dokolist.restservice.model.DokoGroup;
-import com.gausman.dokolist.restservice.model.DokoPlayer;
-import com.gausman.dokolist.restservice.model.DokoSession;
+import com.gausman.dokolist.restservice.model.entities.DokoGroup;
+import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoSession;
 import com.gausman.dokolist.restservice.repository.DokoGroupRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Service

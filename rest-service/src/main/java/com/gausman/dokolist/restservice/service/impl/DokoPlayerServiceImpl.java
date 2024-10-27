@@ -1,6 +1,6 @@
 package com.gausman.dokolist.restservice.service.impl;
 
-import com.gausman.dokolist.restservice.model.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.service.DokoPlayerService;
 import org.springframework.beans.factory.annotation.Autowired;

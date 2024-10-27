@@ -16,7 +16,7 @@ const PlayerColumn: React.FC<{ data: PlayerData[], setPlayers: React.Dispatch<Re
         <div className="grid grid-cols-[auto_auto_auto_auto] place-items-center">
 
             {/* Header for Player */}
-            <div className="col-span-1 text-base font-bold text-center">Players</div>
+            <div className="justify-self-start col-span-1 text-base font-bold text-left">Players</div>
             <div className="col-span-1 text-base font-bold text-center">Team</div>
             <div className="col-span-1 text-base font-bold text-center">
                 <span className='p-1'>

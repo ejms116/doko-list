@@ -151,16 +151,16 @@ const SessionPage = ({ params }: {
     }, [gameData]);
 
 	
-	const sumData = rowData.reduce(
-		(totals, row) => ({
-			p1: totals.p1 + row.players[0].score,
-			p2: totals.p2 + row.players[1].score,
-			p3: totals.p3 + row.players[2].score,
-			p4: totals.p4 + row.players[3].score,
-			p5: totals.p5 + row.players[4].score,
-		}),
-		{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
-	)
+	// const sumData = rowData.reduce(
+	// 	(totals, row) => ({
+	// 		p1: totals.p1 + row.players[0].score,
+	// 		p2: totals.p2 + row.players[1].score,
+	// 		p3: totals.p3 + row.players[2].score,
+	// 		p4: totals.p4 + row.players[3].score,
+	// 		p5: totals.p5 + row.players[4].score,
+	// 	}),
+	// 	{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
+	// )
 
 	const sumGameData: SeatScore[] = useMemo(() => {
 		if (!processedGameData) return [];
@@ -211,7 +211,9 @@ const SessionPage = ({ params }: {
 
 
 
-	if (loading || !sessionData || !gameData) return <p>Loading...</p>;
+	if (loading) return <p>Loading...</p>;
+	if (!sessionData) return <p>Loading session data...</p>;
+	if (!gameData) return <p>Loading game data...</p>;
     if (error) return <p>Error</p>;
 
 	return (
@@ -255,7 +257,7 @@ const SessionPage = ({ params }: {
 					<tbody className="text-gray-300 text-sm">
 					{processedGameData.map((game: GameRowProps) => {
 						return (
-							<GameRow key={game.id} data={game} setOpen={setGameDetailOpen} />
+							<GameRow key={game.id} game={game} setOpen={setGameDetailOpen} />
 						)
 					})}
 		

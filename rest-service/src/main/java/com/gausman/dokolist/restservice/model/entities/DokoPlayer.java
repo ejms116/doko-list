@@ -1,4 +1,4 @@
-package com.gausman.dokolist.restservice.model;
+package com.gausman.dokolist.restservice.model.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

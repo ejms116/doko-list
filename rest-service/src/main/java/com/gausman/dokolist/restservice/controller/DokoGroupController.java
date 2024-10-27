@@ -2,8 +2,7 @@ package com.gausman.dokolist.restservice.controller;
 
 import com.gausman.dokolist.restservice.dto.AddPlayersToGroupRequest;
 import com.gausman.dokolist.restservice.dto.CreateGroupRequest;
-import com.gausman.dokolist.restservice.model.DokoGroup;
-import com.gausman.dokolist.restservice.model.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoGroup;
 import com.gausman.dokolist.restservice.service.DokoGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
 package com.gausman.dokolist.restservice.service;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoSessionRequest;
-import com.gausman.dokolist.restservice.model.DokoSession;
+import com.gausman.dokolist.restservice.model.entities.DokoSession;
 
 import java.util.List;
 

@@ -1,10 +1,24 @@
-import { Party } from "./Constants";
+import { Party, PARTY, GameType, GAME_TYPE } from "./Constants";
 
 export interface Game {
     id: number;
     played: Date;
     dealer: number;
     lead: number;
+    moreBock: boolean;
+    bock: boolean;
+    dokoGameType: GameType;
+    winParty: Party;
+    resultParty: Party;
+    resultValue: number;
+    ansageRe: boolean;
+    ansageReVorab: boolean;
+    ansageContra: boolean;
+    anasgeContraVorab: boolean;
+    weitereAnsagenParty: Party;
+    ansage: number;
+    ansageVorab: number;
+
     seatScores: SeatScores;
 }
 

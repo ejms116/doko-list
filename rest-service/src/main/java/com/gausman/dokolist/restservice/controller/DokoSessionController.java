@@ -1,7 +1,7 @@
 package com.gausman.dokolist.restservice.controller;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoSessionRequest;
-import com.gausman.dokolist.restservice.model.DokoSession;
+import com.gausman.dokolist.restservice.model.entities.DokoSession;
 import com.gausman.dokolist.restservice.service.DokoSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

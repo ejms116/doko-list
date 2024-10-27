@@ -1,6 +1,8 @@
-package com.gausman.dokolist.restservice.model;
+package com.gausman.dokolist.restservice.model.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gausman.dokolist.restservice.model.enums.DokoGameType;
+import com.gausman.dokolist.restservice.model.enums.DokoParty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,5 +41,21 @@ public class DokoGame {
     @CollectionTable(name = "doko_game_seats", joinColumns = @JoinColumn(name = "doko_game_id"))
     @MapKeyColumn(name = "seat_number") // This will be the key of the HashMap
     private Map<Integer, DokoGameSeat> seatScores = new HashMap<>();
+
+    private boolean moreBock = false;
+    private boolean bock = false;
+    private DokoGameType dokoGameType = DokoGameType.NORMAL;
+    private DokoParty winParty;
+    private DokoParty resultParty;
+    private int resultValue;
+    private boolean ansageRe = false;
+    private boolean ansageReVorab = false;
+    private boolean ansageContra = false;
+    private boolean ansageContraVorab = false;
+    private DokoParty weitereAnsagenParty = DokoParty.INAKTIV;
+    private int ansage = -1;
+    private int ansageVorab = -1;
+
+    // TODO Sonderpunkte probably in a new table
 
 }

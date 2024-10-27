@@ -1,4 +1,4 @@
-package com.gausman.dokolist.restservice.model;
+package com.gausman.dokolist.restservice.model.enums;
 
 public enum DokoParty {
     RE,

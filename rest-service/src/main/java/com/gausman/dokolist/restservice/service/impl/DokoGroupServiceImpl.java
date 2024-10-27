@@ -1,12 +1,11 @@
 package com.gausman.dokolist.restservice.service.impl;
 
 import com.gausman.dokolist.restservice.dto.CreateGroupRequest;
-import com.gausman.dokolist.restservice.model.DokoGroup;
-import com.gausman.dokolist.restservice.model.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoGroup;
+import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 import com.gausman.dokolist.restservice.repository.DokoGroupRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.service.DokoGroupService;
-import com.gausman.dokolist.restservice.service.DokoPlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

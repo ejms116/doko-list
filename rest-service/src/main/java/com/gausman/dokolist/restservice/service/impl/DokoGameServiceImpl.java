@@ -1,8 +1,8 @@
 package com.gausman.dokolist.restservice.service.impl;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
-import com.gausman.dokolist.restservice.model.DokoGame;
-import com.gausman.dokolist.restservice.model.DokoSession;
+import com.gausman.dokolist.restservice.model.entities.DokoGame;
+import com.gausman.dokolist.restservice.model.entities.DokoSession;
 import com.gausman.dokolist.restservice.repository.DokoGameRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
@@ -40,11 +40,27 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        DokoGame dokoGame = new DokoGame();
+        // TODO update values in session
+        // total scores, next dealer/lead
 
-        dokoGame.setSeatScores(request.getSeatScores());
+        DokoGame dokoGame = new DokoGame();
         dokoGame.setDokoSession(dokoSession);
         dokoGame.setDealer(request.getDealer());
+        dokoGame.setBock(request.isBock());
+        dokoGame.setMoreBock(request.isMoreBock());
+        dokoGame.setDokoGameType(request.getDokoGameType());
+        dokoGame.setWinParty(request.getWinParty());
+        dokoGame.setResultParty(request.getResultParty());
+        dokoGame.setResultValue(request.getResultValue());
+        dokoGame.setAnsageRe(request.isAnsageRe());
+        dokoGame.setAnsageReVorab(request.isAnsageReVorab());
+        dokoGame.setAnsageContra(request.isAnsageContra());
+        dokoGame.setAnsageContraVorab(request.isAnsageContraVorab());
+        dokoGame.setWeitereAnsagenParty(request.getWeitereAnsagenParty());
+        dokoGame.setAnsage(request.getAnsage());
+        dokoGame.setAnsageVorab(request.getAnsageVorab());
+
+        dokoGame.setSeatScores(request.getSeatScores());
 
         return dokoGameRepository.save(dokoGame);
     }

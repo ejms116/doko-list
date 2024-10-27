@@ -1,7 +1,7 @@
 package com.gausman.dokolist.restservice.controller;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
-import com.gausman.dokolist.restservice.model.DokoGame;
+import com.gausman.dokolist.restservice.model.entities.DokoGame;
 import com.gausman.dokolist.restservice.service.DokoGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
 package com.gausman.dokolist.restservice.service;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
-import com.gausman.dokolist.restservice.model.DokoGame;
+import com.gausman.dokolist.restservice.model.entities.DokoGame;
 
 import java.util.List;
 
