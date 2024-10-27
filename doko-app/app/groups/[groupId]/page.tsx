@@ -2,96 +2,106 @@ import SessionRow from "./session-row";
 import { SessionRowProps } from "./session-row";
 import GreenRedCellSum from "../../ui/green-red-cell-sum";
 
-const groups = [
-	{
-		"id": 1,
-		"name": "Wesperados",
-		"players": [
-			{
-				"id": 1,
-				"name": "Erik",
-				"email": "super@king.com"
-			}
-		]
-	},
-	{
-		"id": 2,
-		"name": "Doko",
-		"players": [
-			{
-				"id": 1,
-				"name": "Erik",
-				"email": "super@king.com"
-			}
-		]
-	}
-]
-
-// Example data
-const rowData: SessionRowProps[] = [
-	{ date: new Date('2024-10-01'), scores: [-1, 1, 0, 1, -1], location: 'New York' },
-	{ date: new Date('2024-10-02'), scores: [7, 7, -7, 0, -7], location: 'Los Angeles' },
-	{ date: new Date('2024-10-03'), scores: [10, -10, -10, 10, 0], location: 'Chicago' },
-];
-
-const sumData = rowData.reduce(
-	(totals, row) => ({
-		p1: totals.p1 + row.scores[0],
-		p2: totals.p2 + row.scores[1],
-		p3: totals.p3 + row.scores[2],
-		p4: totals.p4 + row.scores[3],
-		p5: totals.p5 + row.scores[4],
-	}),
-	{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
-)
+import { Group } from "../../models/general/Group";
+import { Session } from "../../models/general/Session";
+import { SessionPlayer } from "../../models/composite/SessionPlayer";
 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export default function GroupPage({ params }: {
-	params: { groupId: string }
-}) {
-	return (
-		<div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
-			<h1 className="text-2xl font-bold mb-4 text-white">Sessions</h1>
-			<div className="overflow-x-auto">
-				<table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
-					<thead>
-						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-							<th className="py-3 px-6 text-left">Datum</th>
-							<th className="py-3 px-6 text-left">Yannick</th>
-							<th className="py-3 px-6 text-left">Daniel</th>
-							<th className="py-3 px-6 text-left">Hendrik</th>
-							<th className="py-3 px-6 text-left">Matze</th>
-							<th className="py-3 px-6 text-left">Erik</th>
-							<th className="py-3 px-6 text-left">Ort</th>
-							<th className="py-3 px-6 text-left">Action</th>
-						</tr>
-		
-						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-							<th className="py-3 px-6 text-left"></th>
-							<GreenRedCellSum score={sumData.p1} />
-							<GreenRedCellSum score={sumData.p2} />
-							<GreenRedCellSum score={sumData.p3} />
-							<GreenRedCellSum score={sumData.p4} />
-							<GreenRedCellSum score={sumData.p5} />
-							<th className="py-3 px-6 text-left"></th>
-							<th className="py-3 px-6 text-left"></th>
-						</tr>
-						<tr className="border-b border-gray-600">
-							<td colSpan={8} className="h-0.5 bg-gray-600"></td>
-						</tr>
-					</thead>
+const GroupPage = async ({ params }: {
+    params: { groupId: string }
+}) => {
 
+    const groupRes = await fetch(`${apiBaseUrl}/groups/${params.groupId}`, {
+        cache: 'no-store',
+    });
+    const rawGroupData = await groupRes.json();
 
-					<tbody className="text-gray-300 text-sm">
-						<SessionRow key="1" data={rowData[0]} />
-						<SessionRow key="2" data={rowData[1]} />
-						<SessionRow key="3" data={rowData[2]} />
+    const groupData: Group = {
+        ...rawGroupData,
+        founded: new Date(rawGroupData.founded)
 
-					</tbody>
-				</table>
-			</div>
-		</div>
-	);
+    };
 
+    // console.log(groupData);
+
+    const sessions_res = await fetch(`${apiBaseUrl}/groups/${params.groupId}/sessions`, {
+        cache: 'no-store',
+    });
+    const sessions: Session[] = await sessions_res.json();
+    // console.log(sessions);
+
+    const sessionRowProps: SessionRowProps[] = sessions.map((session: Session) => {
+        const playedDate = new Date(session.played);
+
+        let scores = new Array(groupData.players.length).fill(0);
+
+        session.sessionPlayers.map((sp: SessionPlayer) => {
+            scores[groupData.players.findIndex(player => player.id === sp.id.playerId)] = sp.score;
+        })
+
+        return {
+            id: session.id,
+            played: playedDate.toLocaleString(),
+            scores: scores,
+            location: session.location,
+        };
+    });
+
+    let summedScores = new Array(groupData.players.length).fill(0);
+
+    sessionRowProps.forEach((sessionRow: SessionRowProps) => {
+        sessionRow.scores.forEach((score, index) => {
+            summedScores[index] += score;
+        });
+    });
+
+    const formattedFounded = groupData.founded.toLocaleString();
+
+    return (
+        <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
+            <h1 className="text-3xl font-bold mb-2 text-white">Sessions</h1>
+            <h2 className="text-2xl font-semibold mb-1 text-gray-300">{groupData.name}</h2>
+            <h3 className="text-lg text-gray-400 mb-4">{formattedFounded}</h3>
+
+            <div className="overflow-x-auto">
+                <table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
+                    <thead>
+                        <tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
+                            <th className="py-3 px-6 text-left"></th>
+                            {groupData.players.map((p) => {
+                                return <th key={p.id} className="py-3 px-6 text-center">{p.name}</th>;
+                            })}
+                            <th className="py-3 px-6 text-left"></th>
+                            <th className="py-3 px-6 text-left"></th>
+                        </tr>
+
+                        <tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
+                            <th className="py-3 px-6 text-left">Datum</th>
+
+                            {summedScores.map((score, index) => {
+                                return <GreenRedCellSum key={index} score={score} />
+                            })}
+
+                            <th className="py-3 px-6 text-left">Ort</th>
+                            <th className="py-3 px-6 text-left">Action</th>
+                        </tr>
+              
+                    </thead>
+
+                    <tbody className="text-gray-300 text-sm">
+                        {sessionRowProps.map((props) => {
+                            return (
+                                <SessionRow key={props.id} data={props} />
+                            )
+                        })}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 }
+
+export default GroupPage;

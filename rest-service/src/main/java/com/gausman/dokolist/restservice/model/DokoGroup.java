@@ -32,6 +32,7 @@ public class DokoGroup {
             joinColumns = @JoinColumn(name = "group_id"),  // Foreign key for Group
             inverseJoinColumns = @JoinColumn(name = "player_id")  // Foreign key for Player
     )
+    @OrderBy("id ASC")
     private Set<DokoPlayer> players = new HashSet<>();
 
     public void addPlayer(DokoPlayer dokoPlayer){

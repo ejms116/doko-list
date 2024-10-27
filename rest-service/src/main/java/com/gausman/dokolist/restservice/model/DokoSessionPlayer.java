@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "session_player")
+@Table(name = "session_player", indexes = {
+        @Index(name = "idx_session_id", columnList = "session_id")
+})
 @Getter
 @Setter
 public class DokoSessionPlayer {
@@ -22,18 +24,19 @@ public class DokoSessionPlayer {
     @ManyToOne
     @MapsId("playerId")
     @JoinColumn(name = "player_id")
-    @JsonIgnore
     private DokoPlayer player;
+
+    private int seat;
 
     private int score;
 
-    // Constructors, Getters, Setters
     public DokoSessionPlayer() {}
 
-    public DokoSessionPlayer(DokoSession session, DokoPlayer player, int score) {
+    public DokoSessionPlayer(DokoSession session, DokoPlayer player,int seat, int score) {
         this.session = session;
         this.player = player;
         this.score = score;
+        this.seat = seat;
         this.id = new SessionPlayerId(session.getId(), player.getId());
     }
 

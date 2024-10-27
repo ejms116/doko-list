@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import GameRow from "./game-row";
 import { GameRowProps } from "./game-row";
@@ -15,11 +15,19 @@ import SonderpunkteColumn from "./sonderpunkte-column";
 
 import { AnsagenColumnProps } from "./ansagen-column";
 import { PlayerColumnProps } from "./player-column";
-import { Team } from "./player-column";
 import { PlayerData } from "./player-column";
 
-import { Checkbox } from "../../../../ui/cards";
+import { PARTY, Party } from "../../../../models/general/Constants";
 
+import { Session } from "../../../../models/general/Session";
+import { Game, SeatScores } from "../../../../models/general/Game";
+
+import { Checkbox } from "../../../../ui/cards";
+import { SessionPlayer } from "../../../../models/composite/SessionPlayer";
+
+import { SeatScore } from "../../../../models/general/Game";
+
+// DELETE
 const rowData: GameRowProps[] = [
 	{
 		id: 1,
@@ -48,17 +56,6 @@ const rowData: GameRowProps[] = [
 	},
 ]
 
-const sumData = rowData.reduce(
-	(totals, row) => ({
-		p1: totals.p1 + row.players[0].score,
-		p2: totals.p2 + row.players[1].score,
-		p3: totals.p3 + row.players[2].score,
-		p4: totals.p4 + row.players[3].score,
-		p5: totals.p5 + row.players[4].score,
-	}),
-	{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
-)
-
 const ansagenData: AnsagenColumnProps[] = [
 	{ title: 'Ansagen' },
 	{ title: 'Vorab' },
@@ -66,42 +63,156 @@ const ansagenData: AnsagenColumnProps[] = [
 
 
 
+// DELETE
 
-export default function SessionPage({ params }: {
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const SessionPage = ({ params }: {
 	params: {
 		groupId: string,
 		sessionId: string
 	}
-}) {
+}) =>  {
 	const [gameDetailOpen, setGameDetailOpen] = useState(false)
+
+
+	const [sessionData, setSessionData] = useState<Session | null>(null);
+	const [gameData, setGameData] = useState<Game[] | null>(null);
+    const [loading, setLoading] = useState(true); // Loading state
+	const [error, setError] = useState<unknown>(); // Error state
+
+	useEffect(() => {
+        const fetchSessionData = async () => {
+            try {
+                setLoading(true);
+
+                const res = await fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}`, {
+                    cache: 'no-store',
+                });
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                const data = await res.json();
+                setSessionData(data);
+            } catch (err: unknown) {
+				if (err instanceof Error){
+					setError(err);
+				}
+				
+				console.log(err);
+            } finally {
+                setLoading(false); 
+            }
+        };
+
+		const fetchGameData = async () => {
+            try {
+                setLoading(true);
+
+                const res = await fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`, {
+                    cache: 'no-store',
+                });
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                const data = await res.json();
+                setGameData(data);
+				console.log(data)
+            } catch (err: unknown) {
+				if (err instanceof Error){
+					setError(err);
+				}
+				
+				console.log(err);
+            } finally {
+                setLoading(false); 
+            }
+        };
+
+		fetchSessionData();
+        fetchGameData();
+
+    }, [params.sessionId]);
+
+	const processedGameData: GameRowProps[] = useMemo(() => {
+        if (!gameData) return [];
+        return gameData.map((game) => {
+    
+            const processedGame = {
+				...game,
+				played: game.played.toLocaleString(),
+            };
+            return processedGame;
+        });
+    }, [gameData]);
+
+	
+	const sumData = rowData.reduce(
+		(totals, row) => ({
+			p1: totals.p1 + row.players[0].score,
+			p2: totals.p2 + row.players[1].score,
+			p3: totals.p3 + row.players[2].score,
+			p4: totals.p4 + row.players[3].score,
+			p5: totals.p5 + row.players[4].score,
+		}),
+		{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
+	)
+
+	const sumGameData: SeatScore[] = useMemo(() => {
+		if (!processedGameData) return [];
+		return calculateCumulativeSeatScores(processedGameData)
+
+	}, [processedGameData])
+
+	function calculateCumulativeSeatScores(gameRows: GameRowProps[]): SeatScore[] {
+		const cumulativeScores: { [seatNumber: string]: SeatScore } = {};
+
+		gameRows.forEach((gameRow) => {
+		
+			Object.entries(gameRow.seatScores).forEach(([seatNumber, seatScore]) => {
+	
+				if (!cumulativeScores[seatNumber]) {
+					cumulativeScores[seatNumber] = { score: 0, party: seatScore.party };
+				}
+			
+				cumulativeScores[seatNumber].score += seatScore.score;
+
+			});
+		});
+
+		return Object.values(cumulativeScores);
+	}
+
+	// DELETE
 
 	const [players, setPlayers] = useState<PlayerData[]>(() => {
 		const initialPlayers: PlayerData[] = [
-			{ id: 1, name: 'Yannick', team: Team.None },
-			{ id: 2, name: 'Daniel', team: Team.Contra },
-			{ id: 3, name: 'Hendrik', team: Team.Contra },
-			{ id: 4, name: 'Matze', team: Team.Re },
-			{ id: 5, name: 'Erik', team: Team.Re },
+			{ id: 1, name: 'Yannick', party: PARTY.INAKTIV },
+			{ id: 2, name: 'Daniel', party: PARTY.CONTRA },
+			{ id: 3, name: 'Hendrik', party: PARTY.CONTRA },
+			{ id: 4, name: 'Matze', party: PARTY.RE },
+			{ id: 5, name: 'Erik', party: PARTY.RE },
 		]
-
+	
 		return initialPlayers;
 	});
-
-	// const addPlayer = (player: PlayerData) => {
-	// 	setPlayers((prevPlayers) => [...prevPlayers, player]);
-	// };
-
-	// const changePlayerTeam = (id: number, newTeam: Team) => {
-	// 	setPlayers((prevPlayers) =>
-	// 	  prevPlayers.map((player) =>
-	// 		player.id === id ? { ...player, team: newTeam } : player
-	// 	  )
-	// 	);
-	// };
-
+	
 	const playerData: PlayerColumnProps = {
 		player: players,
 	}
+
+	// DELETE
+
+
+
+
+
+	if (loading || !sessionData || !gameData) return <p>Loading...</p>;
+    if (error) return <p>Error</p>;
 
 	return (
 		<div className="overflow-x-auto">
@@ -113,42 +224,45 @@ export default function SessionPage({ params }: {
 					<thead>
 						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
 							<th className="py-3 px-6 text-left">Game</th>
-							<th className="py-3 px-6 text-left">Yannick</th>
-							<th className="py-3 px-6 text-left">Daniel</th>
-							<th className="py-3 px-6 text-left">Hendrik</th>
-							<th className="py-3 px-6 text-left">Matze</th>
-							<th className="py-3 px-6 text-left">Erik</th>
-							<th className="py-3 px-6 text-left">Spieltyp</th>
-							<th className="py-3 px-6 text-left">Sieger</th>
-							<th className="py-3 px-6 text-left">Ergebnis</th>
-							<th className="py-3 px-6 text-left" colSpan={2}>Ansagen</th>
-							<th className="py-3 px-6 text-left" colSpan={2}>Sonderpunkte</th>
-							<th className="py-3 px-6 text-left" >Action</th>
+					
+							{sessionData.sessionPlayers.map((sp: SessionPlayer) => {
+								return (
+									<th className="py-3 px-6 text-center">{sp.player.name}</th>
+								)
+							})}
+							<th className="py-3 px-6 text-center">Spieltyp</th>
+							<th className="py-3 px-6 text-center">Sieger</th>
+							<th className="py-3 px-6 text-center">Ergebnis</th>
+							<th className="py-3 px-6 text-center" colSpan={2}>Ansagen</th>
+							<th className="py-3 px-6 text-center" colSpan={2}>Sonderpunkte</th>
+							<th className="py-3 px-6 text-center" >Action</th>
 						</tr>
 						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
 							<th className="py-3 px-6 text-left"></th>
-							<GreenRedCellSum score={sumData.p1} />
-							<GreenRedCellSum score={sumData.p2} />
-							<GreenRedCellSum score={sumData.p3} />
-							<GreenRedCellSum score={sumData.p4} />
-							<GreenRedCellSum score={sumData.p5} />
-							<th className="py-3 px-6 text-left"></th>
-							<th className="py-3 px-6 text-left"></th>
-							<th className="py-3 px-6 text-left"></th>
-							<th className="py-3 px-6 text-left" >Re</th>
-							<th className="py-3 px-6 text-left" >Contra</th>
-							<th className="py-3 px-6 text-left" >Re</th>
-							<th className="py-3 px-6 text-left" >Contra</th>
-							<th className="py-3 px-6 text-left" ></th>
+							{Object.entries(sumGameData).map(([seatNumber, seatScore]) => (
+								<GreenRedCellSum key={seatNumber} score={seatScore.score} />
+							))}
+							<th className="py-3 px-6 text-center"></th>
+							<th className="py-3 px-6 text-center"></th>
+							<th className="py-3 px-6 text-center"></th>
+							<th className="py-3 px-6 text-center" >Re</th>
+							<th className="py-3 px-6 text-center" >Contra</th>
+							<th className="py-3 px-6 text-center" >Re</th>
+							<th className="py-3 px-6 text-center" >Contra</th>
+							<th className="py-3 px-6 text-center" ></th>
 						</tr>
 					</thead>
 					<tbody className="text-gray-300 text-sm">
-						{rowData.map((row, index) =>
-							<GameRow key={row.id} data={row} setOpen={setGameDetailOpen} />
-						)}
+					{processedGameData.map((game: GameRowProps) => {
+						return (
+							<GameRow key={game.id} data={game} setOpen={setGameDetailOpen} />
+						)
+					})}
+		
 					</tbody>
 				</table>
 			</div>
+
 			<Modal open={gameDetailOpen} onClose={() => setGameDetailOpen(false)}>
 				<div className='grid py-4'>
 					<h1 className='text-lg font-bold py-2'>Neues Spiel hinzufügen</h1>
@@ -164,6 +278,8 @@ export default function SessionPage({ params }: {
 								<option value="solo">Damen Solo</option>
 								<option value="solo">Trumpf Solo</option>
 								<option value="hochzeit">Hochzeit</option>
+								<option value="hochzeit">Hochzeit still</option>
+
 							</select>
 						</div>
 						<div className='flex place-items-center gap-3'>
@@ -210,3 +326,5 @@ export default function SessionPage({ params }: {
 
 	);
 }
+
+export default SessionPage;

@@ -35,8 +35,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - WATCHPACK_POLLING=true
+      NODE_ENV: development
+      WATCHPACK_POLLING: true
+      NEXT_PUBLIC_API_BASE_URL: http://rest-service:8080/api
 
 
 volumes:

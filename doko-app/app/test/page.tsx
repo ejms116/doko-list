@@ -1,13 +1,35 @@
+'use client'
 
-export default async function Home() {
-    //const res = await fetch('https://api.github.com/repos/vercel/next.js');
-    const res = await fetch('http://localhost:8080/api/groups/all');
-    const data = await res.json();
-  
-    return (
-      <div>
-        <h1>Data fetched at build time</h1>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      </div>
-    );
-  }
+import { useEffect, useState } from 'react';
+
+export function Test() {
+  const [backResponse, setBackResponse] = useState([]);
+
+  useEffect(() => {
+    const api = async () => {
+      const data = await fetch("http://localhost:8080/api/groups/all");
+      const jsonData = await data.json();
+      console.log(jsonData)
+      setBackResponse(jsonData)
+    };
+    api();
+  }, []);
+
+  return (
+    <div>
+      <h1>Message received from the backend</h1>
+      <ul>
+        {backResponse.map(item => (
+          <li key={item.id}>
+            {item.name}
+            {' '}
+            
+          </li>
+        ))}
+      </ul>
+
+    </div>
+  );
+}
+
+export default App;

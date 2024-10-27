@@ -1,24 +1,16 @@
 import React from 'react';
 import PlayerCell from './player-cell';
+import { Party } from '../../../../models/general/Constants';
 
-export enum Team {
-    Re,
-    Contra,
-    None
-}
+import { SessionPlayer } from '../../../../models/composite/SessionPlayer';
 
 export interface PlayerData {
     id: number;
     name: string;
-    team: Team;
+    party: Party;
 
 }
 
-// export interface PlayerColumnProps {
-//     player: PlayerData[];
-// }
-
-//const PlayerColumn: React.FC<{data: PlayerColumnProps}> = ({data}) => {
 const PlayerColumn: React.FC<{ data: PlayerData[], setPlayers: React.Dispatch<React.SetStateAction<PlayerData[]>> }> = ({ data, setPlayers }) => {
     return (
         <div className="grid grid-cols-[auto_auto_auto_auto] place-items-center">

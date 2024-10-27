@@ -2,46 +2,43 @@ import Link from "next/link";
 
 import GreenRedCell from "../../../../ui/green-red-cell";
 
+import { SeatScore, SeatScores } from "../../../../models/general/Game";
+import { Party } from "../../../../models/general/Constants";
+
 export interface GameRowProps {
     id: number;
-    players: PlayerProps[];
-    typ: string;
-    winner: string;
-    result: string;
-    ansagen_re: string;
-    ansagen_contra: string;
-    sonderpunkte_re: string;
-    sonderpunkte_contra: string;
-    //setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-
+    dealer: number;
+    lead: number;
+    played: string;
+    seatScores: SeatScores;
 }
 
 export interface PlayerProps {
     score: number;
-    party: string;
+    party: Party;
 }
 
 const GameRow: React.FC<{ data: GameRowProps, setOpen: React.Dispatch<React.SetStateAction<boolean>> }> = ({ data, setOpen }) => {
     return (
         <tr key={data.id} className="border-b border-gray-600 hover:bg-[#3B3B4D]">
             <td className="py-3 px-6 text-center">{data.id}</td>
-            {data.players.map((player, index) =>
-                <GreenRedCell key={index} score={player.score} party={player.party} />
-            )}
+            {Object.entries(data.seatScores).map(([seatNumber, seatScore]) => (
+                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} />
+            ))}
 
             <td className="py-3 px-6 text-center">
                 <span className="bg-gray-500 text-white font-bold px-2 py-1 rounded-md">
-                    {data.typ}
+                    typ
                 </span>
             </td>
             <td className="py-3 px-6 text-center">
                 <span className="bg-green-500 text-white font-bold px-2 py-1 rounded-md">
-                    {data.winner}
+                    winner
                 </span>
             </td>
             <td className="py-3 px-6 text-center">
                 <span className="bg-green-500 text-white font-bold px-2 py-1 rounded-md">
-                    {data.result}
+                    result
                 </span>
                 </td>
             <td className="py-3 px-6 text-center">
@@ -54,15 +51,16 @@ const GameRow: React.FC<{ data: GameRowProps, setOpen: React.Dispatch<React.SetS
             </td>
             <td className="py-3 px-6 text-center">
                 <span className="bg-red-500 text-white font-bold px-2 py-1 rounded-md">
-                    {data.ansagen_contra}
+                    Ans Contra
+                    
                 </span>
             </td>
             <td className="py-3 px-6 text-center">
-                {data.sonderpunkte_re}
+                Sopo Re
             </td>
             <td className="py-3 px-6 text-center">
                 <span className="bg-green-500 text-white font-bold px-2 py-1 rounded-md">
-                    {data.sonderpunkte_contra}
+                    Sopo Contra
                 </span>
             </td>
             <td className="py-3 px-6 text-center">

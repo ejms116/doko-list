@@ -27,21 +27,17 @@ public class DokoSession {
     private String location;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("seat ASC")
     private List<DokoSessionPlayer> sessionPlayers = new ArrayList<>();
 
-    // Add convenience method
-    public void addSessionPlayer(DokoPlayer player, int score) {
-        DokoSessionPlayer sessionPlayer = new DokoSessionPlayer(this, player, score);
+    @Column(name = "next_dealer", nullable = false, columnDefinition = "integer default 0")
+    private int nextDealer;
+
+
+    public void addSessionPlayer(DokoPlayer player, int seat, int score) {
+        DokoSessionPlayer sessionPlayer = new DokoSessionPlayer(this, player, seat, score);
         sessionPlayers.add(sessionPlayer);
         player.getSessionPlayers().add(sessionPlayer);
     }
-
-//    @ManyToMany
-//    @JoinTable(
-//            name = "session_player",
-//            joinColumns = @JoinColumn(name = "session_id"),
-//            inverseJoinColumns = @JoinColumn(name = "player_id")
-//    )
-//    private ArrayList<DokoPlayer> players = new ArrayList<>();
 
 }

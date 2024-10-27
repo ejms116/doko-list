@@ -8,13 +8,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/groups/sessions")
+@RequestMapping("/groups")
 public class DokoSessionController {
     @Autowired
     private DokoSessionService dokoSessionService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/sessions/{id}")
     public ResponseEntity<DokoSession> findById(@PathVariable Long id){
         DokoSession dokoSession = dokoSessionService.findById(id);
         if (dokoSession == null){
@@ -23,7 +25,27 @@ public class DokoSessionController {
         return ResponseEntity.ok(dokoSession);
     }
 
-    @PostMapping("/create")
+    @GetMapping("/sessions/all")
+    public ResponseEntity<List<DokoSession>> findAll(){
+        List<DokoSession> dokoSessions = dokoSessionService.findAll();
+
+        if (dokoSessions == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dokoSessions);
+    }
+
+    @GetMapping("/{groupId}/sessions")
+    public ResponseEntity<List<DokoSession>> findAllByGroupId(@PathVariable Long groupId){
+        List<DokoSession> dokoSessions = dokoSessionService.findAllByGroupId(groupId);
+
+        if (dokoSessions == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dokoSessions);
+    }
+
+    @PostMapping("/sessions/create")
     public ResponseEntity<DokoSession> create(@RequestBody CreateDokoSessionRequest request){
         DokoSession session = dokoSessionService.createSession(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(session);

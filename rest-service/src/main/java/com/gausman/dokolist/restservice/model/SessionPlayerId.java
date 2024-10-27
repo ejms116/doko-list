@@ -24,8 +24,7 @@ public class SessionPlayerId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SessionPlayerId)) return false;
-        SessionPlayerId that = (SessionPlayerId) o;
+        if (!(o instanceof SessionPlayerId that)) return false;
         return sessionId.equals(that.sessionId) && playerId.equals(that.playerId);
     }
 
