@@ -14,7 +14,7 @@ export interface Game {
     ansageRe: boolean;
     ansageReVorab: boolean;
     ansageContra: boolean;
-    anasgeContraVorab: boolean;
+    ansageContraVorab: boolean;
     weitereAnsagenParty: Party;
     ansage: number;
     ansageVorab: number;

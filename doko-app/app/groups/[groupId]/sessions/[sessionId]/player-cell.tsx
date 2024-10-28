@@ -8,13 +8,13 @@ import { Party, PARTY, nextParty } from "../../../../models/general/Constants";
 
 const PlayerCell: React.FC<{data: PlayerData, setPlayers: React.Dispatch<React.SetStateAction<PlayerData[]>>}> = (data, setPlayers) => {
     const dynamic_class_name = 
-        data.data.party == PARTY.RE ? 'text-black' : 
-        data.data.party == PARTY.CONTRA ? 'text-red-500' : 'text-white-500'
+        data.data.party == PARTY.Re ? 'text-black' : 
+        data.data.party == PARTY.Contra ? 'text-red-500' : 'text-white-500'
 
 
     const party_emoji = 
-        data.data.party == PARTY.RE ? String.fromCodePoint(0x2663) : 
-        data.data.party == PARTY.CONTRA ? String.fromCodePoint(0x2666) : ''
+        data.data.party == PARTY.Re ? String.fromCodePoint(0x2663) : 
+        data.data.party == PARTY.Contra ? String.fromCodePoint(0x2666) : ''
 
     const changePlayerParty = (id: number, newParty: Party) => {
         data.setPlayers((prevPlayers: PlayerData[]) =>

@@ -20,14 +20,11 @@ export interface GameRowProps {
     winParty: Party;
     resultParty: Party;
     resultValue: number;
-    ansageRe: boolean;
-    ansageReVorab: boolean;
-    ansageContra: boolean;
-    anasgeContraVorab: boolean;
-    weitereAnsagenParty: Party;
-    ansage: number;
-    ansageVorab: number;
-
+    ansageRe: string;
+    ansageContra: string;
+    sopoRe: string;
+    sopoContra: string;
+    reWin: boolean;
     seatScores: SeatScores;
 }
 
@@ -40,46 +37,29 @@ const GameRow: React.FC<{ game: GameRowProps, setOpen: React.Dispatch<React.SetS
     return (
         <tr key={game.id} className="border-b border-gray-600 hover:bg-[#3B3B4D]">
             <td className="py-3 px-6 text-center">{game.id}</td>
-            {Object.entries(game.seatScores).map(([seatNumber, seatScore]) => (
-                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} />
-            ))}
-
             <td className="py-3 px-6 text-center">
                 <span className="bg-gray-500 text-white font-bold px-2 py-1 rounded-md">
                     {game.dokoGameType}
                 </span>
             </td>
-            <td className="py-3 px-6 text-center">
-                <PartyButton party={game.winParty} />
-            </td>
-            <td className="py-3 px-6 text-center">
-                <PartyButton party={game.resultParty} />
-            </td>
-            <td className="py-3 px-6 text-center">
-                <span className="bg-green-500 text-white font-bold px-2 py-1 ml-2 rounded-md">
-                    90V
-                </span>
-                <span className="bg-green-500 text-white font-bold px-2 py-1 ml-2 rounded-md">
-                    60
-                </span>
-            </td>
-            <td className="py-3 px-6 text-center">
-                <span className="bg-red-500 text-white font-bold px-2 py-1 rounded-md">
-                    Ans Contra
+            {Object.entries(game.seatScores).map(([seatNumber, seatScore]) => (
+                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} />
+            ))}
 
-                </span>
+       
+            <td className="py-3 px-6 text-center">
+                <PartyButton party={game.resultParty} win={game.winParty === game.resultParty} text={`${game.resultParty.slice(0, 2)} ${game.resultValue.toString()}`} />
             </td>
             <td className="py-3 px-6 text-center">
-                Sopo Re
+                <PartyButton party={PARTY.Re} win={game.reWin} text={game.ansageRe} />
+                <PartyButton party={PARTY.Contra} win={!game.reWin} text={game.ansageContra} />
             </td>
             <td className="py-3 px-6 text-center">
-                <span className="bg-green-500 text-white font-bold px-2 py-1 rounded-md">
-                    Sopo Contra
-                </span>
+                <PartyButton party={PARTY.Re} win={game.reWin} text={game.sopoRe} />
+                <PartyButton party={PARTY.Contra} win={game.reWin} text={game.sopoContra} />
             </td>
             <td className="py-3 px-6 text-center">
                 <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700" onClick={() => setOpen(true)}>
-
                     Edit Game
                 </button>
             </td>

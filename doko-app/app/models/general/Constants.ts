@@ -1,7 +1,7 @@
 export const PARTY = {
-    RE: 'RE',
-    CONTRA: 'CONTRA',
-    INAKTIV: 'INAKTIV'
+    Re: 'Re',
+    Contra: 'Contra',
+    Inaktiv: 'Inaktiv'
 }
 
 type ObjectValues<T> = T[keyof T];
@@ -9,12 +9,12 @@ export type Party = ObjectValues<typeof PARTY>
 
 export const nextParty = (party: Party): Party => {
     switch(party) {
-        case PARTY.RE:
-            return PARTY.INAKTIV;
-        case PARTY.CONTRA:
-            return PARTY.RE;
+        case PARTY.Re:
+            return PARTY.Inaktiv;
+        case PARTY.Contra:
+            return PARTY.Re;
         default:
-            return PARTY.CONTRA;
+            return PARTY.Contra;
     }
 }
 

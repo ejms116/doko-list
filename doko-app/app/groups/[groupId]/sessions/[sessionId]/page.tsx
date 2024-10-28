@@ -121,6 +121,7 @@ const SessionPage = ({ params }: {
 
                 const data = await res.json();
                 setGameData(data);
+
 				console.log(data)
             } catch (err: unknown) {
 				if (err instanceof Error){
@@ -141,10 +142,46 @@ const SessionPage = ({ params }: {
 	const processedGameData: GameRowProps[] = useMemo(() => {
         if (!gameData) return [];
         return gameData.map((game) => {
+
+			let ansRe: string = '';
+			if (game.ansageReVorab){
+				ansRe = 'ReV';
+			} else if (game.ansageRe){
+				ansRe = 'Re';
+			}
+
+			let ansCo: string = '';
+			if (game.ansageContraVorab){
+				ansCo = 'CoV';
+			} else if (game.ansageContra){
+				ansCo = 'Co';
+			}
+
+			let weitereAns: string = '';
+
+			if (game.ansageVorab !== -1){
+				weitereAns = `${game.ansageVorab}V`;
+			}
+
+			if (game.ansageVorab == -1 || game.ansage < game.ansageVorab){
+				weitereAns = `${weitereAns} ${game.ansage}`;
+			}
+
+			if (game.weitereAnsagenParty == PARTY.Re){
+				ansRe = `${ansRe} ${weitereAns}`;
+			} else if (game.weitereAnsagenParty == PARTY.Contra){
+				ansCo = `${ansCo} ${weitereAns}`;
+			}
+
+
+			
     
             const processedGame = {
 				...game,
 				played: game.played.toLocaleString(),
+				ansageRe: ansRe,
+				ansageContra: ansCo,
+				reWin: game.winParty == PARTY.Re ? true : false,
             };
             return processedGame;
         });
@@ -191,11 +228,11 @@ const SessionPage = ({ params }: {
 
 	const [players, setPlayers] = useState<PlayerData[]>(() => {
 		const initialPlayers: PlayerData[] = [
-			{ id: 1, name: 'Yannick', party: PARTY.INAKTIV },
-			{ id: 2, name: 'Daniel', party: PARTY.CONTRA },
-			{ id: 3, name: 'Hendrik', party: PARTY.CONTRA },
-			{ id: 4, name: 'Matze', party: PARTY.RE },
-			{ id: 5, name: 'Erik', party: PARTY.RE },
+			{ id: 1, name: 'Yannick', party: PARTY.Inaktiv },
+			{ id: 2, name: 'Daniel', party: PARTY.Contra },
+			{ id: 3, name: 'Hendrik', party: PARTY.Contra },
+			{ id: 4, name: 'Matze', party: PARTY.Re },
+			{ id: 5, name: 'Erik', party: PARTY.Re },
 		]
 	
 		return initialPlayers;
@@ -209,49 +246,60 @@ const SessionPage = ({ params }: {
 
 
 
-
+	
 
 	if (loading) return <p>Loading...</p>;
 	if (!sessionData) return <p>Loading session data...</p>;
 	if (!gameData) return <p>Loading game data...</p>;
     if (error) return <p>Error</p>;
 
+	const playedDate: Date = new Date(sessionData.played);
+
 	return (
-		<div className="overflow-x-auto">
-			<h1>GroupId: {params.groupId}, SessionId: {params.sessionId} </h1>
-			<h1>List games...</h1>
+		<div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
+			{/* <h1>GroupId: {params.groupId}, SessionId: {params.sessionId} </h1>
+			<h1>List games...</h1> */}
+
 			<div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
-				<h1 className="text-2xl font-bold mb-4 text-white">Styled Table in Dark Mode</h1>
+				<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
+					<h2 className="text-2xl font-semibold text-gray-300">{`Doppelkopf bei ${sessionData.location} am ${playedDate.toLocaleString()}`}</h2>
+
+					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+						Neues Spiel hinzufügen
+					</button>
+				</div>
+
+
+				<div className="overflow-x-auto">
 				<table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
 					<thead>
 						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-							<th className="py-3 px-6 text-left">Game</th>
+							<th className="py-3 px-6 text-left"></th>
+							<th className="py-3 px-6 text-center"></th>
 					
 							{sessionData.sessionPlayers.map((sp: SessionPlayer) => {
 								return (
-									<th className="py-3 px-6 text-center">{sp.player.name}</th>
+									<th key={sp.id.playerId} className="py-3 px-6 text-center">{sp.player.name}</th>
 								)
 							})}
-							<th className="py-3 px-6 text-center">Spieltyp</th>
-							<th className="py-3 px-6 text-center">Sieger</th>
-							<th className="py-3 px-6 text-center">Ergebnis</th>
-							<th className="py-3 px-6 text-center" colSpan={2}>Ansagen</th>
-							<th className="py-3 px-6 text-center" colSpan={2}>Sonderpunkte</th>
-							<th className="py-3 px-6 text-center" >Action</th>
+					
+							<th className="py-3 px-6 text-center"></th>
+							
+							<th className="py-3 px-6 text-center"></th>
+							<th className="py-3 px-6 text-center"></th>
+							<th className="py-3 px-6 text-center"></th>
 						</tr>
 						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-							<th className="py-3 px-6 text-left"></th>
+							<th className="py-3 px-6 text-left">Game</th>
+							<th className="py-3 px-6 text-center">Spieltyp</th>
 							{Object.entries(sumGameData).map(([seatNumber, seatScore]) => (
 								<GreenRedCellSum key={seatNumber} score={seatScore.score} />
 							))}
-							<th className="py-3 px-6 text-center"></th>
-							<th className="py-3 px-6 text-center"></th>
-							<th className="py-3 px-6 text-center"></th>
-							<th className="py-3 px-6 text-center" >Re</th>
-							<th className="py-3 px-6 text-center" >Contra</th>
-							<th className="py-3 px-6 text-center" >Re</th>
-							<th className="py-3 px-6 text-center" >Contra</th>
-							<th className="py-3 px-6 text-center" ></th>
+							
+							<th className="py-3 px-6 text-center">Ergebnis</th>
+							<th className="py-3 px-6 text-center">Ansagen</th>
+							<th className="py-3 px-6 text-center">Sonderpunkte</th>
+							<th className="py-3 px-6 text-center">Aktion</th>
 						</tr>
 					</thead>
 					<tbody className="text-gray-300 text-sm">
@@ -263,6 +311,7 @@ const SessionPage = ({ params }: {
 		
 					</tbody>
 				</table>
+				</div>
 			</div>
 
 			<Modal open={gameDetailOpen} onClose={() => setGameDetailOpen(false)}>
@@ -301,6 +350,7 @@ const SessionPage = ({ params }: {
 
 				<div className="grid grid-cols-[auto_auto_auto_auto_auto] gap-4 bg-[#2A2A3C] text-gray-200 items-start">
 					{/* Headers */}
+					
 					<PlayerColumn data={players} setPlayers={setPlayers} />
 					<ResultColumn />
 					<AnsagenColumn data={ansagenData[0]} />

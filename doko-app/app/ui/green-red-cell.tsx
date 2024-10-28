@@ -9,17 +9,17 @@ const GreenRedCell: React.FC<PlayerProps> = ({ score, party }) => {
         score < 0 ? 'text-red-500' : ''
 
     const party_emoji = 
-        party === PARTY.RE ? String.fromCodePoint(0x2663) : 
-        party === PARTY.CONTRA ? String.fromCodePoint(0x2666) : String.fromCodePoint(0x2666)
+        party === PARTY.Re ? String.fromCodePoint(0x2663) : 
+        party === PARTY.Contra ? String.fromCodePoint(0x2666) : String.fromCodePoint(0x2666)
 
     const party_emoji2 =
-        party === PARTY.RE ? <span className="text-black">{party_emoji}</span> : 
-        party === PARTY.CONTRA ? <span className="text-red-500">{party_emoji}</span> : ''
+        party === PARTY.Re ? <span className="text-black">{party_emoji}</span> : 
+        party === PARTY.Contra ? <span className="text-red-500">{party_emoji}</span> : ''
 
-    const dynamic_text = party === PARTY.INAKTIV ? '-' : score
+    const dynamic_text = party === PARTY.Inaktiv ? '-' : score
 
     return (
-        <th className={`py-3 px-6 text-center`}>
+        <th className="py-3 px-6 text-center text-lg">
             <span className={`${dynamic_class_name}`}>{dynamic_text}{' '}</span>
             {party_emoji2}
         </th>

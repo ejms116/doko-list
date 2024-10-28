@@ -6,6 +6,7 @@ import { Group } from "../../models/general/Group";
 import { Session } from "../../models/general/Session";
 import { SessionPlayer } from "../../models/composite/SessionPlayer";
 
+import Modal from "../../ui/modal";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -61,9 +62,13 @@ const GroupPage = async ({ params }: {
 
     return (
         <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
-            <h1 className="text-3xl font-bold mb-2 text-white">Sessions</h1>
-            <h2 className="text-2xl font-semibold mb-1 text-gray-300">{groupData.name}</h2>
-            <h3 className="text-lg text-gray-400 mb-4">{formattedFounded}</h3>
+            <div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
+                <h2 className="text-2xl font-semibold text-gray-300">{groupData.name}</h2>
+
+                <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                    Neuen Abend erstellen
+                </button>
+            </div>
 
             <div className="overflow-x-auto">
                 <table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
@@ -87,7 +92,7 @@ const GroupPage = async ({ params }: {
                             <th className="py-3 px-6 text-left">Ort</th>
                             <th className="py-3 px-6 text-left">Action</th>
                         </tr>
-              
+
                     </thead>
 
                     <tbody className="text-gray-300 text-sm">
@@ -100,6 +105,9 @@ const GroupPage = async ({ params }: {
                     </tbody>
                 </table>
             </div>
+            
+            
+
         </div>
     );
 }

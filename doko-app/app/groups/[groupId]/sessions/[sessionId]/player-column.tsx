@@ -37,7 +37,7 @@ const PlayerColumn: React.FC<{ data: PlayerData[], setPlayers: React.Dispatch<Re
 
             {/* Player names and "Re" */}
             {data.map((player) => (
-                <PlayerCell data={player} setPlayers={setPlayers} />
+                <PlayerCell key={player.id} data={player} setPlayers={setPlayers} />
             ))}
         </div>
 
