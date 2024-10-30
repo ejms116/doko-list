@@ -102,7 +102,7 @@ const GroupPage = async ({ params }: {
                     <tbody className="text-gray-300 text-sm">
                         {sessionRowProps.map((props) => {
                             return (
-                                <SessionRow key={props.id} data={props} />
+                                <SessionRow key={props.id} groupId={groupData.id} data={props} />
                             )
                         })}
 
