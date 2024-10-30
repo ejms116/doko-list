@@ -3,12 +3,15 @@ package com.gausman.dokolist.restservice.service.impl;
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
 import com.gausman.dokolist.restservice.model.entities.DokoGame;
 import com.gausman.dokolist.restservice.model.entities.DokoSession;
+import com.gausman.dokolist.restservice.model.entities.DokoSessionPlayer;
 import com.gausman.dokolist.restservice.repository.DokoGameRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
 import com.gausman.dokolist.restservice.service.DokoGameService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,12 +39,17 @@ public class DokoGameServiceImpl implements DokoGameService {
     }
 
     @Override
+    @Transactional
     public DokoGame createGame(CreateDokoGameRequest request) {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        // TODO update values in session
-        // total scores, next dealer/lead
+
+        dokoSession.updateNextDealer();
+        for (DokoSessionPlayer sp: dokoSession.getSessionPlayers()){
+            sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
+        }
+
 
         DokoGame dokoGame = new DokoGame();
         dokoGame.setDokoSession(dokoSession);
@@ -62,6 +70,7 @@ public class DokoGameServiceImpl implements DokoGameService {
 
         dokoGame.setSeatScores(request.getSeatScores());
 
+        dokoSessionRepository.save(dokoSession);
         return dokoGameRepository.save(dokoGame);
     }
 }

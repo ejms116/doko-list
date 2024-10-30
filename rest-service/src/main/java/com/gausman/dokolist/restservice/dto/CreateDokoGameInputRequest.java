@@ -1,2 +1,10 @@
-package com.gausman.dokolist.restservice.dto;public class CreateDokoGameInputRequest {
+package com.gausman.dokolist.restservice.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class CreateDokoGameInputRequest {
+
 }

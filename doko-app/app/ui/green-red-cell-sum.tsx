@@ -4,15 +4,18 @@ interface GreenRedCellProps {
 
 const GreenRedCellSum: React.FC<GreenRedCellProps> = ({ score }) => {
     return (
-        <th 
-            className={`py-3 px-6 text-center text-lg ${score > 0
-                    ? 'text-green-500'  // Green text if positive
-                    : score < 0
-                        ? 'text-red-500'    // Red text if negative
-                        : ''                // Default text color if zero
+        <th
+            className={`py-3 px-6 text-center text-lg rounded-lg  ${score > 0
+                ? 'text-green-500'  // Green text if positive
+                : score < 0
+                    ? 'text-red-500'    // Red text if negative
+                    : ''                // Default text color if zero
                 }`}
         >
-            {score}
+
+                {score}
+      
+
         </th>
     )
 }

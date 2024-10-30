@@ -15,7 +15,10 @@ const rowData: PlayerRowProps[] = [
 export default function GroupsPage() {
   return (
     <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
-      <h1 className="text-2xl font-bold mb-4 text-white">Alle Doko Gruppen</h1>
+				<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
+					<h2 className="text-2xl font-semibold text-gray-300">Alle Spieler</h2>
+				</div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
           <thead>

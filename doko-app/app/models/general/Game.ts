@@ -25,10 +25,11 @@ export interface Game {
 export interface SeatScore {
     score: number;
     party: Party;
+    solo: boolean;
 }
 
 export interface SeatScores {
-    [seatNumber: string]: SeatScore; 
+    [seatNumber: number]: SeatScore; 
 }
 
 

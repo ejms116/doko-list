@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import SessionRow from "./session-row";
 import { SessionRowProps } from "./session-row";
 import GreenRedCellSum from "../../ui/green-red-cell-sum";
@@ -7,6 +9,7 @@ import { Session } from "../../models/general/Session";
 import { SessionPlayer } from "../../models/composite/SessionPlayer";
 
 import Modal from "../../ui/modal";
+
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -64,10 +67,11 @@ const GroupPage = async ({ params }: {
         <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
             <div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
                 <h2 className="text-2xl font-semibold text-gray-300">{groupData.name}</h2>
-
-                <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                    Neuen Abend erstellen
-                </button>
+                <Link href={`${params.groupId}/new`}>
+                    <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                        Neuen Abend erstellen
+                    </button>
+                </Link>
             </div>
 
             <div className="overflow-x-auto">

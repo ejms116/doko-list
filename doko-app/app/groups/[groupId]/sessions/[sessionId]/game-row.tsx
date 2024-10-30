@@ -31,6 +31,16 @@ export interface GameRowProps {
 export interface PlayerProps {
     score: number;
     party: Party;
+    isLead: boolean;
+    isSolo: boolean;
+}
+
+function formatString(input: string): string {
+    return input
+        .toLowerCase()                             // Convert the entire string to lowercase
+        .split('_')                                // Split the string at underscores
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
+        .join(' ');                                // Join the words with spaces
 }
 
 const GameRow: React.FC<{ game: GameRowProps, setOpen: React.Dispatch<React.SetStateAction<boolean>> }> = ({ game, setOpen }) => {
@@ -39,11 +49,11 @@ const GameRow: React.FC<{ game: GameRowProps, setOpen: React.Dispatch<React.SetS
             <td className="py-3 px-6 text-center">{game.id}</td>
             <td className="py-3 px-6 text-center">
                 <span className="bg-gray-500 text-white font-bold px-2 py-1 rounded-md">
-                    {game.dokoGameType}
+                    {formatString(game.dokoGameType)}
                 </span>
             </td>
             {Object.entries(game.seatScores).map(([seatNumber, seatScore]) => (
-                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} />
+                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} isLead={seatNumber===game.lead.toString()} isSolo={seatScore.solo} />
             ))}
 
        

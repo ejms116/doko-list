@@ -42,6 +42,7 @@ public class DokoGame {
     @MapKeyColumn(name = "seat_number") // This will be the key of the HashMap
     private Map<Integer, DokoGameSeat> seatScores = new HashMap<>();
 
+    private int soloPlayer;
     private boolean moreBock = false;
     private boolean bock = false;
     private DokoGameType dokoGameType = DokoGameType.NORMAL;
@@ -52,7 +53,7 @@ public class DokoGame {
     private boolean ansageReVorab = false;
     private boolean ansageContra = false;
     private boolean ansageContraVorab = false;
-    private DokoParty weitereAnsagenParty = DokoParty.INAKTIV;
+    private DokoParty weitereAnsagenParty = DokoParty.Inaktiv;
     private int ansage = -1;
     private int ansageVorab = -1;
 

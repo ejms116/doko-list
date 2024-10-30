@@ -40,4 +40,9 @@ public class DokoSession {
         player.getSessionPlayers().add(sessionPlayer);
     }
 
+    public void updateNextDealer(){
+        nextDealer++;
+        nextDealer = nextDealer % sessionPlayers.size();
+    }
+
 }

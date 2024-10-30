@@ -264,7 +264,7 @@ const SessionPage = ({ params }: {
 				<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
 					<h2 className="text-2xl font-semibold text-gray-300">{`Doppelkopf bei ${sessionData.location} am ${playedDate.toLocaleString()}`}</h2>
 
-					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => setGameDetailOpen(true)}>
 						Neues Spiel hinzufügen
 					</button>
 				</div>

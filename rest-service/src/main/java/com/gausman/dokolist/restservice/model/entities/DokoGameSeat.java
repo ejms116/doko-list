@@ -11,19 +11,12 @@ import lombok.Setter;
 public class DokoGameSeat {
     private int score;
     private DokoParty party;
-    private boolean solo;
 
     public DokoGameSeat(){};
+
 
     public DokoGameSeat(int score, DokoParty party) {
         this.score = score;
         this.party = party;
-        this.solo = false;
-    }
-
-    public DokoGameSeat(int score, DokoParty party, boolean solo) {
-        this.score = score;
-        this.party = party;
-        this.solo = solo;
     }
 }

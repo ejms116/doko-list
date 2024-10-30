@@ -13,10 +13,10 @@ export interface SessionRowProps {
   location: string;
 }
 
-interface Params {
-  groupId: string;
-  sessionId: string;
-}
+// interface Params {
+//   groupId: string;
+//   sessionId: string;
+// }
 
 const SessionRow: React.FC<{ data: SessionRowProps }> = ({ data }) => {
   const params = useParams();  

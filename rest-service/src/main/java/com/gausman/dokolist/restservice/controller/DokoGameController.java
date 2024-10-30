@@ -42,4 +42,10 @@ public class DokoGameController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dokoGame);
     }
 
+    @PostMapping("/games/validate")
+    public ResponseEntity<DokoGame> validate(@RequestBody CreateDokoGameRequest request){
+        DokoGame dokoGame = dokoGameService.createGame(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dokoGame);
+    }
+
 }
