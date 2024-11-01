@@ -1,35 +1,49 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { DndContext } from '@dnd-kit/core';
 
-export function Test() {
-  const [backResponse, setBackResponse] = useState([]);
+import Droppable from './Droppable';
+import Draggable from './Draggable';
 
-  useEffect(() => {
-    const api = async () => {
-      const data = await fetch("http://localhost:8080/api/groups/all");
-      const jsonData = await data.json();
-      console.log(jsonData)
-      setBackResponse(jsonData)
-    };
-    api();
-  }, []);
+function App() {
+  const containers = ['A', 'B', 'C'];
+
+  const seats = [0, 1, 2, 3, 4]
+  const [parent, setParent] = useState(null);
+  const draggableMarkup = (
+    <Draggable id="draggable">Drag me</Draggable>
+  );
 
   return (
-    <div>
-      <h1>Message received from the backend</h1>
-      <ul>
-        {backResponse.map(item => (
-          <li key={item.id}>
-            {item.name}
-            {' '}
-            
-          </li>
-        ))}
-      </ul>
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className='flex'>
+       
 
-    </div>
+        <div>
+          {seats.map((seatId) => (
+            // We updated the Droppable component so it would accept an `id`
+            // prop and pass it to `useDroppable`
+            <Droppable key={seatId} id={seatId}>
+              {parent === seatId ? draggableMarkup : seatId}
+            </Droppable>
+          ))}
+        </div>
+
+        <div>
+          {parent === null ? draggableMarkup : null}
+        </div>
+      </div>
+    </DndContext>
   );
-}
 
-export default App;
+  function handleDragEnd(event) {
+    const { over } = event;
+
+    // If the item is dropped over a container, set it as the parent
+    // otherwise reset the parent to `null`
+    setParent(over ? over.id : null);
+  }
+};
+
+export default App
