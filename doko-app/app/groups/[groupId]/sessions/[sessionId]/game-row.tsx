@@ -9,11 +9,14 @@ import { GameType } from "../../../../models/general/Constants";
 
 import PartyButton from "../../../../ui/PartyButton";
 
+import { formatString } from "../../../../models/general/Util";
+
 export interface GameRowProps {
     id: number;
     played: string;
     dealer: number;
     lead: number;
+    soloPlayer: number;
     moreBock: boolean;
     bock: boolean;
     dokoGameType: GameType;
@@ -35,15 +38,9 @@ export interface PlayerProps {
     isSolo: boolean;
 }
 
-function formatString(input: string): string {
-    return input
-        .toLowerCase()                             // Convert the entire string to lowercase
-        .split('_')                                // Split the string at underscores
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
-        .join(' ');                                // Join the words with spaces
-}
 
-const GameRow: React.FC<{ game: GameRowProps, setOpen: React.Dispatch<React.SetStateAction<boolean>> }> = ({ game, setOpen }) => {
+
+const GameRow: React.FC<{ game: GameRowProps, showGameDetail: any }> = ({ game, showGameDetail }) => {
     return (
         <tr key={game.id} className="border-b border-gray-600 hover:bg-[#3B3B4D]">
             <td className="py-3 px-6 text-center">{game.id}</td>
@@ -52,24 +49,25 @@ const GameRow: React.FC<{ game: GameRowProps, setOpen: React.Dispatch<React.SetS
                     {formatString(game.dokoGameType)}
                 </span>
             </td>
+            <td className="py-3 text-center">{game.moreBock ? String.fromCodePoint(0x1F416) : ''}</td>
+            <td className="py-3 text-center">{game.bock ? String.fromCodePoint(0x1F356) : ''}</td>
             {Object.entries(game.seatScores).map(([seatNumber, seatScore]) => (
-                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} isLead={seatNumber===game.lead.toString()} isSolo={seatScore.solo} />
+                <GreenRedCell key={seatNumber} score={seatScore.score} party={seatScore.party} isLead={seatNumber===game.lead.toString()} isSolo={seatNumber===game.soloPlayer.toString()} />
             ))}
 
-       
             <td className="py-3 px-6 text-center">
                 <PartyButton party={game.resultParty} win={game.winParty === game.resultParty} text={`${game.resultParty.slice(0, 2)} ${game.resultValue.toString()}`} />
             </td>
-            <td className="py-3 px-6 text-center">
+            <td className="py-3 px-6 text-center whitespace-nowrap">
                 <PartyButton party={PARTY.Re} win={game.reWin} text={game.ansageRe} />
                 <PartyButton party={PARTY.Contra} win={!game.reWin} text={game.ansageContra} />
             </td>
-            <td className="py-3 px-6 text-center">
+            <td className="py-3 px-6 text-center whitespace-nowrap">
                 <PartyButton party={PARTY.Re} win={game.reWin} text={game.sopoRe} />
                 <PartyButton party={PARTY.Contra} win={game.reWin} text={game.sopoContra} />
             </td>
             <td className="py-3 px-6 text-center">
-                <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700" onClick={() => setOpen(true)}>
+                <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700" onClick={() => showGameDetail(game.id)}>
                     Edit Game
                 </button>
             </td>

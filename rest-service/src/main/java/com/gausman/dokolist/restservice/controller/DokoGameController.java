@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/groups/sessions")
 public class DokoGameController {
@@ -44,8 +45,14 @@ public class DokoGameController {
 
     @PostMapping("/games/validate")
     public ResponseEntity<DokoGame> validate(@RequestBody CreateDokoGameRequest request){
-        DokoGame dokoGame = dokoGameService.createGame(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dokoGame);
+        DokoGame dokoGame = dokoGameService.validateGame(request);
+        return ResponseEntity.status(HttpStatus.OK).body(dokoGame);
+    }
+
+    @PostMapping("/games/{gameId}/update")
+    public ResponseEntity<DokoGame> update(@PathVariable Long gameId, @RequestBody CreateDokoGameRequest request){
+        DokoGame dokoGame = dokoGameService.updateGame(gameId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(dokoGame);
     }
 
 }

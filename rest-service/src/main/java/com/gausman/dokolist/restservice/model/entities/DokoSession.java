@@ -33,6 +33,9 @@ public class DokoSession {
     @Column(name = "next_dealer", nullable = false, columnDefinition = "integer default 0")
     private int nextDealer;
 
+    @Column(name = "bock_remaining", nullable = false, columnDefinition = "integer default 0")
+    private int bockRemaining;
+
 
     public void addSessionPlayer(DokoPlayer player, int seat, int score) {
         DokoSessionPlayer sessionPlayer = new DokoSessionPlayer(this, player, seat, score);
@@ -43,6 +46,18 @@ public class DokoSession {
     public void updateNextDealer(){
         nextDealer++;
         nextDealer = nextDealer % sessionPlayers.size();
+    }
+
+    public void addBock(){
+        bockRemaining += sessionPlayers.size();
+    }
+
+    public boolean useBock(){
+        if (bockRemaining > 0){
+            bockRemaining -= 1;
+            return true;
+        }
+        return false;
     }
 
 }

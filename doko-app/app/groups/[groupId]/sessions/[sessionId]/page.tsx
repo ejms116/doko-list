@@ -27,43 +27,9 @@ import { SessionPlayer } from "../../../../models/composite/SessionPlayer";
 
 import { SeatScore } from "../../../../models/general/Game";
 
-// DELETE
-const rowData: GameRowProps[] = [
-	{
-		id: 1,
-		players: [{ score: 0, party: '-' }, { score: 5, party: 'Re' }, { score: 5, party: 'Re' }, { score: -5, party: 'Contra' }, { score: -5, party: 'Contra' }],
-		typ: 'normal', winner: 'Re', result: 'Re90', ansagen_re: '90V,60', ansagen_contra: 'Co', sonderpunkte_re: 'F', sonderpunkte_contra: 'D'
-	},
-	{
-		id: 2,
-		players: [{ score: 5, party: 'Re' }, { score: 0, party: '-' }, { score: 5, party: 'Re' }, { score: -5, party: 'Contra' }, { score: -5, party: 'Contra' }],
-		typ: 'normal', winner: 'Re', result: 'Re90', ansagen_re: '90V,60', ansagen_contra: 'Co', sonderpunkte_re: 'F', sonderpunkte_contra: 'D'
-	},
-	{
-		id: 3,
-		players: [{ score: 5, party: 'Re' }, { score: 5, party: 'Re' }, { score: 0, party: '-' }, { score: -5, party: 'Contra' }, { score: -5, party: 'Contra' }],
-		typ: 'normal', winner: 'Re', result: 'Re90', ansagen_re: '90V,60', ansagen_contra: 'Co', sonderpunkte_re: 'F', sonderpunkte_contra: 'D'
-	},
-	{
-		id: 4,
-		players: [{ score: 5, party: 'Re' }, { score: 5, party: 'Re' }, { score: -5, party: 'Contra' }, { score: 0, party: '-' }, { score: -5, party: 'Contra' }],
-		typ: 'normal', winner: 'Re', result: 'Re90', ansagen_re: '90V,60', ansagen_contra: 'Co', sonderpunkte_re: 'F', sonderpunkte_contra: 'D'
-	},
-	{
-		id: 5,
-		players: [{ score: 0, party: 'Re' }, { score: 0, party: 'Re' }, { score: 0, party: 'Contra' }, { score: 0, party: 'Contra' }, { score: 0, party: '-' }],
-		typ: 'normal', winner: 'Re', result: 'Re90', ansagen_re: '90V,60', ansagen_contra: 'Co', sonderpunkte_re: 'F', sonderpunkte_contra: 'D'
-	},
-]
+import { GAME_TYPE, GameType } from "../../../../models/general/Constants";
+import { formatString } from "../../../../models/general/Util";
 
-const ansagenData: AnsagenColumnProps[] = [
-	{ title: 'Ansagen' },
-	{ title: 'Vorab' },
-]
-
-
-
-// DELETE
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -72,150 +38,203 @@ const SessionPage = ({ params }: {
 		groupId: string,
 		sessionId: string
 	}
-}) =>  {
+}) => {
 	const [gameDetailOpen, setGameDetailOpen] = useState(false)
 
 
 	const [sessionData, setSessionData] = useState<Session | null>(null);
 	const [gameData, setGameData] = useState<Game[] | null>(null);
-    const [loading, setLoading] = useState(true); // Loading state
-	const [error, setError] = useState<unknown>(); // Error state
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<unknown>();
+
+	const [modalGameId, setModalGameId] = useState<number | null>(null);
+	const [modalPlayers, setModalPlayers] = useState<PlayerData[]>([]);
+	const [modalGameType, setModalGameType] = useState<GameType>(GAME_TYPE.NORMAL)
+	const [modalBockCount, setModalBockCount] = useState<number>(0);
+	const [modalBock, setModalBock] = useState<boolean>(false);
+	const [modalMoreBock, setModalMoreBock] = useState<boolean>(false);
+	const [modalSoloCheckboxDisabled, setModalSoloCheckboxDisabled] = useState<boolean>(true);
+
+	const [modalResultParty, setModalResultParty] = useState<Party>(PARTY.Inaktiv);
+	const [modaelResultValue, setModalResultValue] = useState<number>(120);
+
+	const [modalAnsageRe, setModalAnsageRe] = useState<boolean>(false);
+	const [modalAnsageReVorab, setModalAnsageReVorab] = useState<boolean>(false);
+	const [modalAnsageContra, setModalAnsageContra] = useState<boolean>(false);
+	const [modalAnsageContraVorab, setModalAnsageContraVorab] = useState<boolean>(false);
+
+	const [modalweitereAnsagenParty, setModalWeitereAnsagenParty] = useState<Party>(PARTY.Inaktiv);
+	const [modalweitereAnsagenPartyVorab, setModalWeitereAnsagenPartyVorab] = useState<Party>(PARTY.Inaktiv); // only for frontend
+	const [modalAnsage, setModalAnsage] = useState<number>(120);
+	const [modalAnsageVorab, setModalAnsageVorab] = useState<number>(120);
+
+	const handleModalGameTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setModalGameType(event.target.value);
+		if (event.target.value === GAME_TYPE.NORMAL){
+			clearSoloFlag()
+		}
+    };
+
+	const clearSoloFlag = () => {
+		setModalPlayers((prevPlayers) => {
+			return prevPlayers.map(player => {
+
+				return { 
+					...player,
+					solo: false
+				};
+			})
+
+		})
+	}
 
 	useEffect(() => {
-        const fetchSessionData = async () => {
-            try {
-                setLoading(true);
+		if (modalGameType !== GAME_TYPE.NORMAL){
+			setModalSoloCheckboxDisabled(false)
+		} else {
+			setModalSoloCheckboxDisabled(true)
+		}
+	}, [modalGameType])
 
-                const res = await fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}`, {
-                    cache: 'no-store',
-                });
+	const fetchData = async () => {
+		try {
+			setLoading(true);
 
-                if (!res.ok) {
-                    throw new Error('Failed to fetch data');
-                }
+			// Run both fetch requests in parallel
+			const [sessionRes, gameRes] = await Promise.all([
+				fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}`, { cache: 'no-store' }),
+				fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`, { cache: 'no-store' })
+			]);
 
-                const data = await res.json();
-                setSessionData(data);
-            } catch (err: unknown) {
-				if (err instanceof Error){
-					setError(err);
-				}
-				
-				console.log(err);
-            } finally {
-                setLoading(false); 
-            }
-        };
 
-		const fetchGameData = async () => {
-            try {
-                setLoading(true);
+			if (!sessionRes.ok || !gameRes.ok) {
+				throw new Error('Failed to fetch data');
+			}
 
-                const res = await fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`, {
-                    cache: 'no-store',
-                });
+			const [sessionData, gameData] = await Promise.all([
+				sessionRes.json(),
+				gameRes.json()
+			]);
 
-                if (!res.ok) {
-                    throw new Error('Failed to fetch data');
-                }
+			setSessionData(sessionData);
+			setGameData(gameData);
+			console.log(gameData); 
+		} catch (err: unknown) {
+			if (err instanceof Error) {
+				setError(err);
+			}
+			console.log(err);
+		} finally {
+			setLoading(false); 
+		}
+	};
 
-                const data = await res.json();
-                setGameData(data);
+	useEffect(() => {
+		fetchData();
+	}, [params.sessionId]);
+	
 
-				console.log(data)
-            } catch (err: unknown) {
-				if (err instanceof Error){
-					setError(err);
-				}
-				
-				console.log(err);
-            } finally {
-                setLoading(false); 
-            }
-        };
-
-		fetchSessionData();
-        fetchGameData();
-
-    }, [params.sessionId]);
+	useEffect(() => {
+		if (sessionData && modalPlayers.length === 0){
+			const playerDataArray: PlayerData[] = sessionData.sessionPlayers.map((sessionPlayer: SessionPlayer) => ({
+				id: sessionPlayer.id.playerId,
+				name: sessionPlayer.player.name,
+				seat: sessionPlayer.seat,
+				party: PARTY.Inaktiv,
+				score: 0,
+				solo: false,
+			}));
+	
+			setModalPlayers(playerDataArray);
+		}
+	}, [sessionData, modalPlayers])
 
 	const processedGameData: GameRowProps[] = useMemo(() => {
-        if (!gameData) return [];
-        return gameData.map((game) => {
+		if (!gameData) return [];
+		return gameData.map((game) => {
 
 			let ansRe: string = '';
-			if (game.ansageReVorab){
-				ansRe = 'ReV';
-			} else if (game.ansageRe){
+			let ansReV: string = '';
+			if (game.ansageReVorab) {
+				ansReV = 'ReV';
+			} else if (game.ansageRe) {
 				ansRe = 'Re';
 			}
 
 			let ansCo: string = '';
-			if (game.ansageContraVorab){
-				ansCo = 'CoV';
-			} else if (game.ansageContra){
+			let ansCoV: string = '';
+			if (game.ansageContraVorab) {
+				ansCoV = 'CoV';
+			} else if (game.ansageContra) {
 				ansCo = 'Co';
 			}
 
 			let weitereAns: string = '';
+			let weitereAnsV: string = '';
 
-			if (game.ansageVorab !== -1){
-				weitereAns = `${game.ansageVorab}V`;
+			if (game.ansageVorab !== 120) {
+				weitereAnsV = `${game.ansageVorab}V`;
 			}
 
-			if (game.ansageVorab == -1 || game.ansage < game.ansageVorab){
-				weitereAns = `${weitereAns} ${game.ansage}`;
+			if (game.ansageVorab === 120 || game.ansage < game.ansageVorab) {
+				// weitereAns = `${weitereAns},${game.ansage}`;
+				weitereAns = `${game.ansage}`;
 			}
 
-			if (game.weitereAnsagenParty == PARTY.Re){
-				ansRe = `${ansRe} ${weitereAns}`;
-			} else if (game.weitereAnsagenParty == PARTY.Contra){
-				ansCo = `${ansCo} ${weitereAns}`;
+			if (game.weitereAnsagenParty == PARTY.Re) {
+				// ansRe = `${ansRe},${weitereAns}`;
+				if (weitereAnsV !== ''){
+					ansReV = weitereAnsV;
+				}
+				if (weitereAns !== ''){
+					ansRe = weitereAns;
+				}
+			} else if (game.weitereAnsagenParty == PARTY.Contra) {
+				// ansCo = `${ansCo},${weitereAns}`;
+				if (weitereAnsV !== ''){
+					ansCoV = weitereAnsV;
+				}
+				if (weitereAns !== ''){
+					ansCo = weitereAns;
+				}
 			}
 
 
-			
-    
-            const processedGame = {
+
+
+			const processedGame = {
 				...game,
 				played: game.played.toLocaleString(),
-				ansageRe: ansRe,
-				ansageContra: ansCo,
+				ansageRe: [ansReV, ansRe].filter(Boolean).join(','),
+				ansageContra: [ansCoV, ansCo].filter(Boolean).join(','),
 				reWin: game.winParty == PARTY.Re ? true : false,
-            };
-            return processedGame;
-        });
-    }, [gameData]);
-
-	
-	// const sumData = rowData.reduce(
-	// 	(totals, row) => ({
-	// 		p1: totals.p1 + row.players[0].score,
-	// 		p2: totals.p2 + row.players[1].score,
-	// 		p3: totals.p3 + row.players[2].score,
-	// 		p4: totals.p4 + row.players[3].score,
-	// 		p5: totals.p5 + row.players[4].score,
-	// 	}),
-	// 	{ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }
-	// )
+			};
+			return processedGame;
+		});
+	}, [gameData]);
 
 	const sumGameData: SeatScore[] = useMemo(() => {
-		if (!processedGameData) return [];
-		return calculateCumulativeSeatScores(processedGameData)
+		if (!processedGameData || !sessionData) return [];
 
-	}, [processedGameData])
+		return calculateCumulativeSeatScores(processedGameData, sessionData)
 
-	function calculateCumulativeSeatScores(gameRows: GameRowProps[]): SeatScore[] {
+	}, [sessionData, processedGameData])
+
+	function calculateCumulativeSeatScores(gameRows: GameRowProps[], sd: Session): SeatScore[] {
 		const cumulativeScores: { [seatNumber: string]: SeatScore } = {};
 
+		sd.sessionPlayers.map((sp) => {
+			cumulativeScores[sp.seat] = { score: 0, party: PARTY.Inaktiv };
+		})
+
 		gameRows.forEach((gameRow) => {
-		
+
 			Object.entries(gameRow.seatScores).forEach(([seatNumber, seatScore]) => {
-	
+
 				if (!cumulativeScores[seatNumber]) {
 					cumulativeScores[seatNumber] = { score: 0, party: seatScore.party };
 				}
-			
+
 				cumulativeScores[seatNumber].score += seatScore.score;
 
 			});
@@ -224,34 +243,217 @@ const SessionPage = ({ params }: {
 		return Object.values(cumulativeScores);
 	}
 
-	// DELETE
+	const updateSoloCheckbox = (playerId: number) => {
+		setModalPlayers((prevPlayers) => {
+			return prevPlayers.map((player, index) => {
 
-	const [players, setPlayers] = useState<PlayerData[]>(() => {
-		const initialPlayers: PlayerData[] = [
-			{ id: 1, name: 'Yannick', party: PARTY.Inaktiv },
-			{ id: 2, name: 'Daniel', party: PARTY.Contra },
-			{ id: 3, name: 'Hendrik', party: PARTY.Contra },
-			{ id: 4, name: 'Matze', party: PARTY.Re },
-			{ id: 5, name: 'Erik', party: PARTY.Re },
-		]
-	
-		return initialPlayers;
-	});
-	
-	const playerData: PlayerColumnProps = {
-		player: players,
+				return { 
+					...player,
+					solo: player.id === playerId ? true : false
+				};
+			})
+
+		})
 	}
 
-	// DELETE
+	// diese Funktion ist für die "Edit buttons" in jeder Game row
+	const updateModalData = (gameId: number) => {
+		let editGame = gameData?.find(game => game.id == gameId);
 
+		if (!editGame) return;
+		setModalGameId(gameId);
+		setModalBockCount(0);
 
+		setModalPlayers((prevPlayers) => {
+			return prevPlayers.map((player, index) => {
+				const seatScore = editGame.seatScores[index];
+				if (seatScore){
+					return { 
+						...player,
+						score: seatScore.score, 
+						party: seatScore.party,
+						solo: editGame.soloPlayer === index ? true : false
+					};
+				}
+				return player;
+			})
+			
+		})
 
+		setModalGameType(editGame.dokoGameType);
+		setModalBock(editGame.bock);
+		setModalMoreBock(editGame.moreBock);
+
+		setModalResultParty(editGame.resultParty);
+		setModalResultValue(editGame.resultValue);
+
+		setModalAnsageRe(editGame.ansageRe);
+		setModalAnsageReVorab(editGame.ansageReVorab);
+		setModalAnsageContra(editGame.ansageContra);
+		setModalAnsageContraVorab(editGame.ansageContraVorab);
+
+		setModalWeitereAnsagenParty(editGame.weitereAnsagenParty);
+		setModalWeitereAnsagenPartyVorab(editGame.weitereAnsagenParty);
+
+		setModalAnsage(editGame.ansage);
+		setModalAnsageVorab(editGame.ansageVorab);
+		
+		setGameDetailOpen(true);
+
+	}
+
+	const openModalNewGame = () => {
+		if (sessionData){
+			setModalPlayers((prevPlayers) => {
+				return prevPlayers.map((player, index) => {	
+					return { 
+						...player,
+						score: 0,
+						party: (4 < sessionData?.sessionPlayers.length && player.seat === sessionData?.nextDealer) ? PARTY.Inaktiv : PARTY.Contra,
+						solo: false
+					};
+					
 	
+				})
+				
+			})
+		}
+
+		setModalGameId(null);
+
+		setModalGameType(GAME_TYPE.NORMAL);
+		setModalBock(false);
+		setModalBockCount(sessionData?.bockRemaining ?? 0);
+		setModalMoreBock(false);
+
+		setModalResultParty(PARTY.Inaktiv);
+		setModalResultValue(120);
+
+		setModalAnsageRe(false);
+		setModalAnsageReVorab(false);
+		setModalAnsageContra(false);
+		setModalAnsageContraVorab(false);
+
+		setModalWeitereAnsagenParty(PARTY.Inaktiv);
+		setModalWeitereAnsagenPartyVorab(PARTY.Inaktiv);
+
+		setModalAnsage(120);
+		setModalAnsageVorab(120);
+
+		setGameDetailOpen(true);
+	}
+
+	const postGame = async (actuallyPost: boolean) => {
+		const seatScores: { [key: number]: { score: number; party: string } } = {};
+		let soloPlayerIndex: number = -1;
+
+		modalPlayers.forEach((player, index) => {
+			// Populate seatScores object
+			seatScores[index] = {
+				score: player.score,
+				party: player.party,
+			};
+		
+			// Find the index of the player with solo attribute true
+			if (player.solo) {
+				soloPlayerIndex = index;
+			}
+		});
+
+		const requestBody = {
+			sessionId: sessionData?.id,
+			dealer: sessionData?.nextDealer,
+			soloPlayer: soloPlayerIndex,
+			moreBock: modalMoreBock,
+			bock: true, // is calculated in the backend
+			dokoGameType: modalGameType,
+			winParty: PARTY.Inaktiv, // is also calculated in the backend
+			resultParty: modalResultParty,
+			resultValue: modaelResultValue,
+			ansageRe: modalAnsageRe,
+			ansageReVorab: modalAnsageReVorab,
+			ansageContra: modalAnsageContra,
+			ansageContraVorab: modalAnsageContraVorab,
+			weitereAnsagenParty: modalweitereAnsagenParty,
+			ansage: modalAnsage,
+			ansageVorab: modalAnsageVorab,
+			seatScores: seatScores,
+		} 
+
+		console.log(requestBody);
+
+		let url = `${apiBaseUrl}/groups/sessions/games/validate`;
+
+		if (actuallyPost){
+			if (modalGameId !== null){
+				url = `${apiBaseUrl}/groups/sessions/games/${modalGameId}/update`;
+			} else {
+				url = `${apiBaseUrl}/groups/sessions/games/create`;
+			}
+			
+		}
+		console.log(`url: ${url}`);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create game');
+            }
+
+            const result = await response.json();
+			console.log(result)	
+
+			// put result in state
+
+			setModalPlayers((prevPlayers) => {
+				return prevPlayers.map((player, index) => {
+					const seatScore = result.seatScores[index];
+					if (seatScore){
+						return { 
+							...player,
+							score: seatScore.score, 
+						};
+					}
+					return player;
+				})
+				
+			})
+
+			
+            setError("");
+            //setSuccessMessage("Spiel wurde erfolgreich angelegt!");
+
+            const newGameId = result.id;
+            //router.push(`/groups/${groupData?.id}/sessions/${newSessionId}`);
+			//setGameDetailOpen(false)
+			// window.location.reload()
+			if (actuallyPost){
+				setGameDetailOpen(false)
+				await fetchData();
+			}
+			
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError("An unknown error occurred");
+            }
+        }
+
+	}
 
 	if (loading) return <p>Loading...</p>;
 	if (!sessionData) return <p>Loading session data...</p>;
 	if (!gameData) return <p>Loading game data...</p>;
-    if (error) return <p>Error</p>;
+	if (!modalPlayers) return <p>Loading session players...</p>;
+	if (error) return <p>Error</p>;
 
 	const playedDate: Date = new Date(sessionData.played);
 
@@ -264,53 +466,60 @@ const SessionPage = ({ params }: {
 				<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
 					<h2 className="text-2xl font-semibold text-gray-300">{`Doppelkopf bei ${sessionData.location} am ${playedDate.toLocaleString()}`}</h2>
 
-					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => setGameDetailOpen(true)}>
+					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={openModalNewGame}>
 						Neues Spiel hinzufügen
+					</button>
+
+					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => alert("hi")}>
+						Alle Spiele neu berechnen
 					</button>
 				</div>
 
-
+				
 				<div className="overflow-x-auto">
-				<table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
-					<thead>
-						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-							<th className="py-3 px-6 text-left"></th>
-							<th className="py-3 px-6 text-center"></th>
-					
-							{sessionData.sessionPlayers.map((sp: SessionPlayer) => {
+					<table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
+						<thead>
+							<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
+								<th className="py-3 px-6 text-left"></th>
+								<th className="py-3 text-center"></th>
+								<th className="py-3 text-center"></th>
+								<th className="py-3 text-center"></th>
+
+								{sessionData.sessionPlayers.map((sp: SessionPlayer) => {
+									return (
+										<th key={sp.id.playerId} className="py-3 px-6 text-center">{sp.player.name}</th>
+									)
+								})}
+
+								<th className="text-center"></th>
+								<th className="text-center"></th>
+								<th className="text-center"></th>
+								<th className="text-center"></th>
+							</tr>
+							<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
+								<th className="px-6 text-left">Game</th>
+								<th className="text-center">Spieltyp</th>
+								<th className="text-center">Herz</th>
+								<th className="text-center">Bock</th>
+								{Object.entries(sumGameData).map(([seatNumber, seatScore]) => (
+									<GreenRedCellSum key={seatNumber} score={seatScore.score} />
+								))}
+
+								<th className="text-center">Ergebnis</th>
+								<th className="py-3 px-6 text-center">Ansagen</th>
+								<th className="py-3 px-6 text-center">Sonderpunkte</th>
+								<th className="py-3 px-6 text-center">Aktion</th>
+							</tr>
+						</thead>
+						<tbody className="text-gray-300 text-sm">
+							{processedGameData.map((game: GameRowProps) => {
 								return (
-									<th key={sp.id.playerId} className="py-3 px-6 text-center">{sp.player.name}</th>
+									<GameRow key={game.id} game={game} showGameDetail={updateModalData} />
 								)
 							})}
-					
-							<th className="py-3 px-6 text-center"></th>
-							
-							<th className="py-3 px-6 text-center"></th>
-							<th className="py-3 px-6 text-center"></th>
-							<th className="py-3 px-6 text-center"></th>
-						</tr>
-						<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-							<th className="py-3 px-6 text-left">Game</th>
-							<th className="py-3 px-6 text-center">Spieltyp</th>
-							{Object.entries(sumGameData).map(([seatNumber, seatScore]) => (
-								<GreenRedCellSum key={seatNumber} score={seatScore.score} />
-							))}
-							
-							<th className="py-3 px-6 text-center">Ergebnis</th>
-							<th className="py-3 px-6 text-center">Ansagen</th>
-							<th className="py-3 px-6 text-center">Sonderpunkte</th>
-							<th className="py-3 px-6 text-center">Aktion</th>
-						</tr>
-					</thead>
-					<tbody className="text-gray-300 text-sm">
-					{processedGameData.map((game: GameRowProps) => {
-						return (
-							<GameRow key={game.id} game={game} setOpen={setGameDetailOpen} />
-						)
-					})}
-		
-					</tbody>
-				</table>
+
+						</tbody>
+					</table>
 				</div>
 			</div>
 
@@ -322,14 +531,17 @@ const SessionPage = ({ params }: {
 							<span>Spieltyp</span>
 							<select
 								id="options"
+								value={modalGameType}
 								className="block w-full bg-[#1E1E2C] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 max-w-[150px]"
-							>
-								<option value="normal">Normal</option>
-								<option value="solo">Buben Solo</option>
-								<option value="solo">Damen Solo</option>
-								<option value="solo">Trumpf Solo</option>
-								<option value="hochzeit">Hochzeit</option>
-								<option value="hochzeit">Hochzeit still</option>
+								onChange={handleModalGameTypeChange}
+							>	
+							
+								<option value={GAME_TYPE.NORMAL}>{formatString(GAME_TYPE.NORMAL)}</option>
+								<option value={GAME_TYPE.BUBEN_SOLO}>{formatString(GAME_TYPE.BUBEN_SOLO)}</option>
+								<option value={GAME_TYPE.DAMEN_SOLO}>{formatString(GAME_TYPE.DAMEN_SOLO)}</option>
+								<option value={GAME_TYPE.TRUMPF_SOLO}>{formatString(GAME_TYPE.TRUMPF_SOLO)}</option>
+								<option value={GAME_TYPE.HOCHZEIT}>{formatString(GAME_TYPE.HOCHZEIT)}</option>
+								<option value={GAME_TYPE.HOCHZEIT_STILL}>{formatString(GAME_TYPE.HOCHZEIT_STILL)}</option>
 
 							</select>
 						</div>
@@ -339,23 +551,43 @@ const SessionPage = ({ params }: {
 							</span>
 							<input
 								type="checkbox"
+								checked={modalMoreBock}
 								className="form-checkbox h-6 w-6 text-blue-500 bg-gray-600 border-gray-500 rounded"
+								onChange={() => setModalMoreBock(!modalMoreBock)}
 							/>
 						</div>
-						<div className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}>Bock verbleibend: 5</div>
+						{modalBock && <div className={`bg-red-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}>Bock</div>}
+						{modalBockCount > 0 && <div className={`bg-red-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}>Bock verbleibend: {modalBockCount}</div>}
 					</div>
 				</div>
-
 				
-
 				<div className="grid grid-cols-[auto_auto_auto_auto_auto] gap-4 bg-[#2A2A3C] text-gray-200 items-start">
 					{/* Headers */}
-					
-					<PlayerColumn data={players} setPlayers={setPlayers} />
-					<ResultColumn />
-					<AnsagenColumn data={ansagenData[0]} />
-					<AnsagenColumn data={ansagenData[1]} />
 
+					<PlayerColumn data={modalPlayers} setPlayers={setModalPlayers} soloCheckboxDisabled={modalSoloCheckboxDisabled} setSoloCheckbox={updateSoloCheckbox} />
+					<ResultColumn resultParty={modalResultParty} setResultParty={setModalResultParty} resultValue={modaelResultValue} setResultValue={setModalResultValue} />
+					<AnsagenColumn 
+						title="Ansagen" 
+						ansageRe={modalAnsageRe} 
+						setAnsageRe={setModalAnsageRe} 
+						ansageContra={modalAnsageContra}  
+						setAnsageContra={setModalAnsageContra}
+						weitereAnsagenParty={modalweitereAnsagenParty}
+						setWeitereAnsagenParty={setModalWeitereAnsagenParty}
+						ansage={modalAnsage}
+						setAnsage={setModalAnsage}
+					/>
+					<AnsagenColumn 
+						title="Vorab"
+						ansageRe={modalAnsageReVorab} 
+						setAnsageRe={setModalAnsageReVorab} 
+						ansageContra={modalAnsageContraVorab}  
+						setAnsageContra={setModalAnsageContraVorab}
+						weitereAnsagenParty={modalweitereAnsagenPartyVorab}
+						setWeitereAnsagenParty={setModalWeitereAnsagenPartyVorab}
+						ansage={modalAnsageVorab}
+						setAnsage={setModalAnsageVorab}
+					/>
 					<SonderpunkteColumn />
 
 				</div>
@@ -367,8 +599,8 @@ const SessionPage = ({ params }: {
 				</div>
 				<div className='flex justify-end items-end space-x-4'>
 					<div className='space-x-4'>
-						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700'>Eingaben überprüfen</button>
-						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700'>Spiel hinzufügen</button>
+						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(false)}>Eingaben überprüfen</button>
+						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(true)}>Spiel hinzufügen</button>
 
 					</div>
 				</div>

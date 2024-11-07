@@ -72,14 +72,18 @@ const Minus = () => {
 
 interface CheckboxProps {
     isDisabled: boolean;
+    isChecked: boolean;
+    updateCheckbox: any;
 }
 
-const Checkbox: React.FC<CheckboxProps> = ({isDisabled}) => {
+const Checkbox: React.FC<CheckboxProps> = ({isDisabled, isChecked, updateCheckbox}) => {
     return (
         <input
             type="checkbox"
+            checked={isChecked}
             className="form-checkbox h-3 w-3 text-blue-500 bg-gray-600 border-gray-500 rounded"
             disabled={isDisabled}
+            onChange={updateCheckbox}
           />
     )
 }

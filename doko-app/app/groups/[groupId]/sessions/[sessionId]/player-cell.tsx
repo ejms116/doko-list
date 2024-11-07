@@ -6,18 +6,25 @@ import { Checkbox } from "../../../../ui/cards";
 
 import { Party, PARTY, nextParty } from "../../../../models/general/Constants";
 
-const PlayerCell: React.FC<{data: PlayerData, setPlayers: React.Dispatch<React.SetStateAction<PlayerData[]>>}> = (data, setPlayers) => {
+interface PlayerCellProps {
+    data: PlayerData;
+    soloCheckboxDisabled: boolean;
+    setPlayers: React.Dispatch<React.SetStateAction<PlayerData[]>>;
+    setSoloCheckbox: any;
+}
+
+const PlayerCell: React.FC<PlayerCellProps> = ({ data, soloCheckboxDisabled, setPlayers, setSoloCheckbox }) => {
     const dynamic_class_name = 
-        data.data.party == PARTY.Re ? 'text-black' : 
-        data.data.party == PARTY.Contra ? 'text-red-500' : 'text-white-500'
+        data.party == PARTY.Re ? 'text-black' : 
+        data.party == PARTY.Contra ? 'text-red-500' : 'text-white-500'
 
 
     const party_emoji = 
-        data.data.party == PARTY.Re ? String.fromCodePoint(0x2663) : 
-        data.data.party == PARTY.Contra ? String.fromCodePoint(0x2666) : ''
+        data.party == PARTY.Re ? String.fromCodePoint(0x2663) : 
+        data.party == PARTY.Contra ? String.fromCodePoint(0x2666) : ''
 
     const changePlayerParty = (id: number, newParty: Party) => {
-        data.setPlayers((prevPlayers: PlayerData[]) =>
+        setPlayers((prevPlayers: PlayerData[]) =>
             prevPlayers.map((player) =>
             player.id === id ? { ...player, party: newParty } : player
             )
@@ -27,19 +34,20 @@ const PlayerCell: React.FC<{data: PlayerData, setPlayers: React.Dispatch<React.S
 
 
     const onClick = () => {
-        changePlayerParty(data.data.id, nextParty(data.data.party));
+        changePlayerParty(data.id, nextParty(data.party));
     }
         
 
     return (
         
         <Fragment>
-            <span className="justify-self-start text-left mr-4">{data.data.name}</span>
+            <span className="justify-self-start text-left mr-4">{data.name}</span>
+            <Checkbox isDisabled={soloCheckboxDisabled} isChecked={data.solo} updateCheckbox={setSoloCheckbox} />
             <button className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[100px]`} onClick={() => onClick()}>
-                <span className={`${dynamic_class_name}`}>{party_emoji}{' '}{data.data.party}</span>
+                <span className={`${dynamic_class_name}`}>{party_emoji}{' '}{data.party}</span>
             </button>
-            <Checkbox isDisabled={true} />
-            <GreenRedCellSpan score={1}/>
+            
+            <GreenRedCellSpan score={data.score}/>
         </Fragment>
 
     )

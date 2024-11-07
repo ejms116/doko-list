@@ -6,6 +6,8 @@ export interface Session {
     group: Group;
     played: Date;
     location: string;
-    sessionPlayers: SessionPlayer[]
+    sessionPlayers: SessionPlayer[];
+    nextDealer: number;
+    bockRemaining: number;
 
 }

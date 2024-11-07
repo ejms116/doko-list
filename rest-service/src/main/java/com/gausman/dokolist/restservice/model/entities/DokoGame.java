@@ -54,8 +54,8 @@ public class DokoGame {
     private boolean ansageContra = false;
     private boolean ansageContraVorab = false;
     private DokoParty weitereAnsagenParty = DokoParty.Inaktiv;
-    private int ansage = -1;
-    private int ansageVorab = -1;
+    private int ansage = 120;
+    private int ansageVorab = 120;
 
     // TODO Sonderpunkte probably in a new table
 

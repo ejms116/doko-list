@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface DokoGameRepository extends JpaRepository<DokoGame,Long> {
-    List<DokoGame> findByDokoSession_Id(Long sessionId);
+    List<DokoGame> findByDokoSession_IdOrderByPlayedAsc(Long sessionId);
 }

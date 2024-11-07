@@ -5,6 +5,7 @@ export interface Game {
     played: Date;
     dealer: number;
     lead: number;
+    soloPlayer: number;
     moreBock: boolean;
     bock: boolean;
     dokoGameType: GameType;
@@ -25,7 +26,6 @@ export interface Game {
 export interface SeatScore {
     score: number;
     party: Party;
-    solo: boolean;
 }
 
 export interface SeatScores {

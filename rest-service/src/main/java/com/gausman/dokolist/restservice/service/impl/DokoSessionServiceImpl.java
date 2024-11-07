@@ -38,7 +38,7 @@ public class DokoSessionServiceImpl implements DokoSessionService {
 
     @Override
     public List<DokoSession> findAllByGroupId(Long groupId) {
-        return dokoSessionRepository.findByDokoGroup_Id(groupId);
+        return dokoSessionRepository.findByDokoGroup_IdOrderByPlayedAsc(groupId);
     }
 
     @Override

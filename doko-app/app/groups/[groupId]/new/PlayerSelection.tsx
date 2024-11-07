@@ -20,19 +20,15 @@ import {
 } from "@dnd-kit/sortable";
 
 import PlayerSelectionRow from "./PlayerSelectionRow";
-
-import { Player } from "../../../models/general/Player";
 import { PlayerSelectionProps } from "./page";
 
 type PlayerListProps = {
     title: string;
     players: PlayerSelectionProps[];
     setPlayers: React.Dispatch<React.SetStateAction<PlayerSelectionProps[]>>;
-  };
+};
 
-const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers}) => {
-
-
+const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers }) => {
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -46,8 +42,6 @@ const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        //console.log(event);
-
         if (over === null) {
             return;
         }
@@ -57,12 +51,10 @@ const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers
             const newPos = getPlayerPosition(Number(over.id));
 
             return arrayMove(players, oldPos, newPos);
-        })
-
-    }
+        });
+    };
 
     const togglePlayerChecked = (id: number) => {
-        console.log(players);
         setPlayers(prevPlayers =>
             prevPlayers.map(player =>
                 player.id === id
@@ -72,12 +64,9 @@ const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers
         );
     };
 
-
-
     return (
-        <div className="flex space-x-4">
-            <div className="bg-[#2A2A3C] shadow-md rounded-lg">
-            {/* <div className="overflow-x-auto bg-[#2A2A3C] shadow-md rounded-lg w-1/2"> */}
+        <div className="flex flex-col space-y-4">
+            <div className="bg-[#2A2A3C] shadow-md rounded-lg overflow-hidden">
                 <div className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal py-3 px-6">
                     {title}
                 </div>
@@ -85,23 +74,21 @@ const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers
                     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
                         <SortableContext items={players} strategy={verticalListSortingStrategy}>
                             {players.map((player) => (
-
                                 <PlayerSelectionRow 
                                     key={player.id} 
                                     id={player.id} 
                                     name={player.player.name} 
                                     email={player.player.email} 
                                     checked={player.checked}
-                                    setCheckbox={() => togglePlayerChecked(player.id)}/>
-                                   
+                                    onToggle={() => togglePlayerChecked(player.id)}
+                                />
                             ))}
-
                         </SortableContext>
                     </DndContext>
                 </div>
             </div>
-        </div >
-    )
+        </div>
+    );
 }
 
 export default PlayerSelection;

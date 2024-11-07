@@ -9,4 +9,6 @@ public interface DokoGameService {
     List<DokoGame> findAll();
     List<DokoGame> findAllBySessionId(Long sessionId);
     DokoGame createGame(CreateDokoGameRequest request);
+    DokoGame updateGame(Long gameId, CreateDokoGameRequest request);
+    DokoGame validateGame(CreateDokoGameRequest request);
 }
