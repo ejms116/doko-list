@@ -42,12 +42,6 @@ public class DokoGameController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dokoGame);
     }
 
-    @PostMapping("/games/validate")
-    public ResponseEntity<DokoGame> validate(@RequestBody CreateDokoGameRequest request){
-        DokoGame dokoGame = dokoGameService.validateGame(request);
-        return ResponseEntity.status(HttpStatus.OK).body(dokoGame);
-    }
-
     @PostMapping("/games/{gameId}/update")
     public ResponseEntity<DokoGame> update(@PathVariable Long gameId, @RequestBody CreateDokoGameRequest request){
         DokoGame dokoGame = dokoGameService.updateGame(gameId, request);

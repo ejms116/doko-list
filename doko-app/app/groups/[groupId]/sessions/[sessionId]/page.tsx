@@ -559,6 +559,7 @@ const SessionPage = ({ params }: {
 
 
 		const requestBody = {
+			writeToDb: actuallyPost,
 			sessionId: sessionData?.id,
 			dealer: editGame !== undefined ? editGame.dealer : sessionData?.nextDealer,
 			soloPlayer: soloPlayerIndex,
@@ -582,17 +583,14 @@ const SessionPage = ({ params }: {
 		console.log("request")
 		console.log(requestBody);
 
-		let url = `${apiBaseUrl}/groups/sessions/games/validate`;
+		let url = '';
 
-		if (actuallyPost) {
-			console.log(`actuall post: ${actuallyPost}`)
-			if (modalGameId !== null) {
-				url = `${apiBaseUrl}/groups/sessions/games/${modalGameId}/update`;
-			} else {
-				url = `${apiBaseUrl}/groups/sessions/games/create`;
-			}
-
+		if (modalGameId !== null) {
+			url = `${apiBaseUrl}/groups/sessions/games/${modalGameId}/update`;
+		} else {
+			url = `${apiBaseUrl}/groups/sessions/games/create`;
 		}
+
 		console.log(`url: ${url}`);
 
 		try {
@@ -641,6 +639,7 @@ const SessionPage = ({ params }: {
 			}
 
 		} catch (error) {
+			console.log(error);
 			if (error instanceof Error) {
 				setError(error.message);
 			} else {
@@ -654,7 +653,7 @@ const SessionPage = ({ params }: {
 	if (!sessionData) return <p>Loading session data...</p>;
 	if (!gameData) return <p>Loading game data...</p>;
 	if (!modalPlayers) return <p>Loading session players...</p>;
-	if (error) return <p>Error</p>;
+	//if (error) return <p>Error</p>;
 
 	const playedDate: Date = new Date(sessionData.played);
 
@@ -832,7 +831,7 @@ const SessionPage = ({ params }: {
 				<div className='flex justify-end items-end space-x-4'>
 					<div className='space-x-4'>
 						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(false)}>Eingaben überprüfen</button>
-						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(true)}>{!createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'}</button>
+						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(true)}>{createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'}</button>
 
 					</div>
 				</div>

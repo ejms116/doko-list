@@ -13,6 +13,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class CreateDokoGameRequest {
+    private boolean writeToDb;
     private Long sessionId;
     private int dealer;
     private int soloPlayer;
