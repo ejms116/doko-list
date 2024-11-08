@@ -1,10 +1,8 @@
 package com.gausman.dokolist.restservice.service.impl;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
-import com.gausman.dokolist.restservice.model.entities.DokoGame;
-import com.gausman.dokolist.restservice.model.entities.DokoGameSeat;
-import com.gausman.dokolist.restservice.model.entities.DokoSession;
-import com.gausman.dokolist.restservice.model.entities.DokoSessionPlayer;
+import com.gausman.dokolist.restservice.dto.CreateDokoSonderpunkt;
+import com.gausman.dokolist.restservice.model.entities.*;
 import com.gausman.dokolist.restservice.model.enums.DokoGameType;
 import com.gausman.dokolist.restservice.model.enums.DokoParty;
 import com.gausman.dokolist.restservice.repository.DokoGameRepository;
@@ -12,10 +10,12 @@ import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
 import com.gausman.dokolist.restservice.service.DokoGameService;
 
+import com.gausman.dokolist.restservice.util.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -47,6 +47,14 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
+        // Validations
+        List<String> errors = new ArrayList<>();
+
+
+        // If there are any validation errors, throw a ValidationException with the list
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
 
         dokoSession.updateNextDealer();
 
@@ -57,9 +65,11 @@ public class DokoGameServiceImpl implements DokoGameService {
 
         DokoGame dokoGame = new DokoGame();
         setValuesFromRequest(dokoGame, request);
+
         dokoGame.setDokoSession(dokoSession);
 
         dokoGame.setBock(dokoSession.useBock());
+        dokoGame.setMoreBock(request.isMoreBock());
         if (request.isMoreBock()){
             dokoSession.addBock();
         }
@@ -80,18 +90,54 @@ public class DokoGameServiceImpl implements DokoGameService {
         // Retrieve associated session if any fields related to it need updating
         DokoSession dokoSession = dokoGame.getDokoSession();
 
+        // Validations
+        List<String> errors = new ArrayList<>();
+
+        // Bock
+        boolean changeBockToNoBock = dokoGame.isBock() && !request.isBock();
+        boolean changeNoBockToBock = !dokoGame.isBock() && request.isBock();
+
+        if (changeNoBockToBock) {
+            if (dokoSession.getBockRemaining() < 1){
+                errors.add("Spiel kann nicht in Bock geändert werden, kein Bock übrig.");
+            } else {
+                dokoGame.setBock(dokoSession.useBock());
+            }
+        }
+        if (changeBockToNoBock){
+            dokoSession.addSingleBock();
+        }
+        dokoGame.setBock(request.isBock());
+
+        // Herz rum
+        boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
+        boolean changeNoHerzToHerz = !dokoGame.isMoreBock() && request.isMoreBock();
+
+        if (changeHerzToNoHerz){
+            if (dokoSession.getBockRemaining() < dokoSession.getSessionPlayers().size()){
+                errors.add("Bockrunde kann nicht aufgelöst werden, Bock-Spiele bereits verbraucht");
+            } else {
+                dokoSession.removeBock();
+            }
+        }
+
+        if (changeNoHerzToHerz){
+            dokoSession.addBock();
+        }
+
+        dokoGame.setMoreBock(request.isMoreBock());
+
+        // If there are any validation errors, throw a ValidationException with the list
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
+
         // Update fields on dokoGame based on request
         setValuesFromRequest(dokoGame, request);
 
-//        // Update the scores (or any other additional logic)
-//        for (DokoSessionPlayer sp: dokoSession.getSessionPlayers()) {
-//            sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
-//        }
-//
-//        dokoGame.setSeatScores(request.getSeatScores());
         calculateWinnerAndScores(dokoGame);
-        // Persist changes
-        //dokoSessionRepository.save(dokoSession); // if dokoSession was modified
+
+        dokoSessionRepository.save(dokoSession); // if dokoSession was modified
         return dokoGameRepository.save(dokoGame);
     }
 
@@ -101,6 +147,14 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
+        // Validations
+        List<String> errors = new ArrayList<>();
+
+
+        // If there are any validation errors, throw a ValidationException with the list
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
 
         dokoSession.updateNextDealer();
         for (DokoSessionPlayer sp: dokoSession.getSessionPlayers()){
@@ -112,6 +166,7 @@ public class DokoGameServiceImpl implements DokoGameService {
         setValuesFromRequest(dokoGame, request);
 
         dokoGame.setBock(dokoSession.useBock());
+        dokoGame.setMoreBock(request.isMoreBock());
         if (request.isMoreBock()){
             dokoSession.addBock();
         }
@@ -120,7 +175,6 @@ public class DokoGameServiceImpl implements DokoGameService {
 
 
         // TODO Validierungen
-        // TODO Sonderpunkte
 
         calculateWinnerAndScores(dokoGame);
 
@@ -131,8 +185,6 @@ public class DokoGameServiceImpl implements DokoGameService {
     private void setValuesFromRequest(DokoGame dokoGame, CreateDokoGameRequest request){
         dokoGame.setDealer(request.getDealer());
         dokoGame.setSoloPlayer(request.getSoloPlayer());
-        dokoGame.setBock(request.isBock()); // will get overwritten in most cases
-        dokoGame.setMoreBock(request.isMoreBock());
         dokoGame.setDokoGameType(request.getDokoGameType());
         dokoGame.setWinParty(request.getWinParty());
         dokoGame.setResultParty(request.getResultParty());
@@ -145,6 +197,12 @@ public class DokoGameServiceImpl implements DokoGameService {
         dokoGame.setAnsage(request.getAnsage());
         dokoGame.setAnsageVorab(request.getAnsageVorab());
         dokoGame.setSeatScores(request.getSeatScores());
+
+        dokoGame.getSonderpunkte().clear();
+
+        for (CreateDokoSonderpunkt spRequest: request.getSonderpunkte()){
+            dokoGame.addSonderpunkt(spRequest);
+        }
     }
 
     private DokoParty invertDokoParty(DokoParty party){
@@ -200,6 +258,14 @@ public class DokoGameServiceImpl implements DokoGameService {
             default:
                 break;
         }
+
+        int sopo = 0;
+
+        for (DokoGameSonderpunkt sp : dokoGame.getSonderpunkte()) {
+            sopo += sp.getDokoParty().equals(DokoParty.Re) ? 1 : -1;
+        }
+
+        generalScore += dokoGame.getWinParty().equals(DokoParty.Re) ? sopo : -sopo;
 
         return generalScore;
     }

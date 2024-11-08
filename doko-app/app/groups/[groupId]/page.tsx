@@ -11,15 +11,19 @@ import { SessionPlayer } from "../../models/composite/SessionPlayer";
 import Modal from "../../ui/modal";
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const apiBaseUrl =
+  typeof window === "undefined"  // Check if running on the server
+    ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
+    : process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const GroupPage = async ({ params }: {
     params: { groupId: string }
 }) => {
-
+    console.log(`${apiBaseUrl}/groups/${params.groupId}`);
     const groupRes = await fetch(`${apiBaseUrl}/groups/${params.groupId}`, {
         cache: 'no-store',
     });
+    
     const rawGroupData = await groupRes.json();
 
     const groupData: Group = {

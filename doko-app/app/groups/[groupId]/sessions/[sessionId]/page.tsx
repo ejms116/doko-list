@@ -20,7 +20,7 @@ import { PlayerData } from "./player-column";
 import { PARTY, Party } from "../../../../models/general/Constants";
 
 import { Session } from "../../../../models/general/Session";
-import { Game, SeatScores } from "../../../../models/general/Game";
+import { Game, SeatScores, Sopo } from "../../../../models/general/Game";
 
 import { Checkbox } from "../../../../ui/cards";
 import { SessionPlayer } from "../../../../models/composite/SessionPlayer";
@@ -30,8 +30,12 @@ import { SeatScore } from "../../../../models/general/Game";
 import { GAME_TYPE, GameType } from "../../../../models/general/Constants";
 import { formatString } from "../../../../models/general/Util";
 
+import { SopoType, SOPO_TYPE } from "../../../../models/general/Constants";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const apiBaseUrl =
+	typeof window === "undefined"  // Check if running on the server
+		? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
+		: process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const SessionPage = ({ params }: {
 	params: {
@@ -40,7 +44,7 @@ const SessionPage = ({ params }: {
 	}
 }) => {
 	const [gameDetailOpen, setGameDetailOpen] = useState(false)
-
+	const [createNewGame, setCreateNewGame] = useState<boolean>(false);
 
 	const [sessionData, setSessionData] = useState<Session | null>(null);
 	const [gameData, setGameData] = useState<Game[] | null>(null);
@@ -68,18 +72,31 @@ const SessionPage = ({ params }: {
 	const [modalAnsage, setModalAnsage] = useState<number>(120);
 	const [modalAnsageVorab, setModalAnsageVorab] = useState<number>(120);
 
+	const [modalSopoReFuchsGefangen, setModalSopoReFuchsGefangen] = useState<boolean[]>([false, false]);
+	const [modalSopoContraFuchsGefangen, setModalSopoContraFuchsGefangen] = useState<boolean[]>([false, false]);
+
+	const [modalSopoFuchsjagdGeschafft, setModalSopoFuchsjagdGeschafft] = useState<Party>(PARTY.Inaktiv);
+	const [modalSopoFuchsjagdFehlgeschlagen, setModalSopoFuchsjagdFehlgeschlagen] = useState<Party>(PARTY.Inaktiv);
+	const [modalSopoFuchsAmEnd, setModalSopoFuchsAmEnd] = useState<Party>(PARTY.Inaktiv);
+	const [modalSopoDulleGefangen, setModalSopoDulleGefangen] = useState<Party>(PARTY.Inaktiv);
+	const [modalSopoCharlie, setModalSopoCharlie] = useState<Party>(PARTY.Inaktiv);
+	const [modalSopoCharlieGefangen, setModalSopoCharlieGefangen] = useState<Party>(PARTY.Inaktiv);
+
+	const [modalSopoReDoppelkopf, setModalSopoReDoppelkopf] = useState<boolean[]>([false, false, false, false]);
+	const [modalSopoContraDoppelkopf, setModalSopoContraDoppelkopf] = useState<boolean[]>([false, false, false, false]);
+
 	const handleModalGameTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setModalGameType(event.target.value);
-		if (event.target.value === GAME_TYPE.NORMAL){
+		setModalGameType(event.target.value);
+		if (event.target.value === GAME_TYPE.NORMAL) {
 			clearSoloFlag()
 		}
-    };
+	};
 
 	const clearSoloFlag = () => {
 		setModalPlayers((prevPlayers) => {
 			return prevPlayers.map(player => {
 
-				return { 
+				return {
 					...player,
 					solo: false
 				};
@@ -89,7 +106,7 @@ const SessionPage = ({ params }: {
 	}
 
 	useEffect(() => {
-		if (modalGameType !== GAME_TYPE.NORMAL){
+		if (modalGameType !== GAME_TYPE.NORMAL) {
 			setModalSoloCheckboxDisabled(false)
 		} else {
 			setModalSoloCheckboxDisabled(true)
@@ -101,6 +118,8 @@ const SessionPage = ({ params }: {
 			setLoading(true);
 
 			// Run both fetch requests in parallel
+			console.log(`${apiBaseUrl}/groups/sessions/${params.sessionId}`);
+			console.log(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`);
 			const [sessionRes, gameRes] = await Promise.all([
 				fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}`, { cache: 'no-store' }),
 				fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`, { cache: 'no-store' })
@@ -118,24 +137,24 @@ const SessionPage = ({ params }: {
 
 			setSessionData(sessionData);
 			setGameData(gameData);
-			console.log(gameData); 
+			console.log(gameData);
 		} catch (err: unknown) {
 			if (err instanceof Error) {
 				setError(err);
 			}
 			console.log(err);
 		} finally {
-			setLoading(false); 
+			setLoading(false);
 		}
 	};
 
 	useEffect(() => {
 		fetchData();
 	}, [params.sessionId]);
-	
+
 
 	useEffect(() => {
-		if (sessionData && modalPlayers.length === 0){
+		if (sessionData && modalPlayers.length === 0) {
 			const playerDataArray: PlayerData[] = sessionData.sessionPlayers.map((sessionPlayer: SessionPlayer) => ({
 				id: sessionPlayer.id.playerId,
 				name: sessionPlayer.player.name,
@@ -144,7 +163,7 @@ const SessionPage = ({ params }: {
 				score: 0,
 				solo: false,
 			}));
-	
+
 			setModalPlayers(playerDataArray);
 		}
 	}, [sessionData, modalPlayers])
@@ -183,18 +202,18 @@ const SessionPage = ({ params }: {
 
 			if (game.weitereAnsagenParty == PARTY.Re) {
 				// ansRe = `${ansRe},${weitereAns}`;
-				if (weitereAnsV !== ''){
+				if (weitereAnsV !== '') {
 					ansReV = weitereAnsV;
 				}
-				if (weitereAns !== ''){
+				if (weitereAns !== '') {
 					ansRe = weitereAns;
 				}
 			} else if (game.weitereAnsagenParty == PARTY.Contra) {
 				// ansCo = `${ansCo},${weitereAns}`;
-				if (weitereAnsV !== ''){
+				if (weitereAnsV !== '') {
 					ansCoV = weitereAnsV;
 				}
-				if (weitereAns !== ''){
+				if (weitereAns !== '') {
 					ansCo = weitereAns;
 				}
 			}
@@ -247,7 +266,7 @@ const SessionPage = ({ params }: {
 		setModalPlayers((prevPlayers) => {
 			return prevPlayers.map((player, index) => {
 
-				return { 
+				return {
 					...player,
 					solo: player.id === playerId ? true : false
 				};
@@ -256,28 +275,114 @@ const SessionPage = ({ params }: {
 		})
 	}
 
+	const setFirstFalseToTrue = (arr: boolean[]): boolean[] => {
+		// Find the index of the first false value
+		const index = arr.indexOf(false);
+
+		// If there's no false value, return the array as is
+		if (index === -1) return arr;
+
+		// Create a new array with the first false value set to true
+		return arr.map((value, i) => (i === index ? true : value));
+	}
+
+	const setAllToFalse = (arr: boolean[]): boolean[] => {
+		return arr.map(() => false);
+	}
+
+	const resetToFalse = () => {
+		setModalSopoContraDoppelkopf(() => [false, false, false, false]);
+	};
+
+	function createBooleanArray(x: number, y: number): boolean[] {
+		return Array.from({ length: y }, (_, index) => index < x);
+	}
+
+
+
 	// diese Funktion ist für die "Edit buttons" in jeder Game row
 	const updateModalData = (gameId: number) => {
+		setCreateNewGame(false);
 		let editGame = gameData?.find(game => game.id == gameId);
 
 		if (!editGame) return;
 		setModalGameId(gameId);
 		setModalBockCount(0);
 
+		console.log(editGame);
+
+		setModalSopoFuchsjagdGeschafft(PARTY.Inaktiv);
+		setModalSopoFuchsjagdFehlgeschlagen(PARTY.Inaktiv);
+		setModalSopoFuchsAmEnd(PARTY.Inaktiv);
+		setModalSopoDulleGefangen(PARTY.Inaktiv);
+		setModalSopoCharlie(PARTY.Inaktiv);
+		setModalSopoCharlieGefangen(PARTY.Inaktiv);
+
+		let reDoppolkopfCount = 0;
+		let contraDoppolkopfCount = 0;
+		let reFuchsCount = 0;
+		let contraFuchsCount = 0;
+
+
+		editGame.sonderpunkte.map((sopo: Sopo) => {
+			switch (sopo.type) {
+				case SOPO_TYPE.DOPPELKOPF:
+					if (sopo.dokoParty === PARTY.Re) {
+						reDoppolkopfCount++;
+					} else if (sopo.dokoParty === PARTY.Contra) {
+						contraDoppolkopfCount++;
+					}
+					break;
+				case SOPO_TYPE.FUCHS_GEFANGEN:
+					if (sopo.dokoParty === PARTY.Re) {
+						reFuchsCount++;
+					} else if (sopo.dokoParty === PARTY.Contra) {
+						contraFuchsCount++;
+					}
+					break;
+				case SOPO_TYPE.FUCHSJAGD_GESCHAFFT:
+					setModalSopoFuchsjagdGeschafft(sopo.dokoParty);
+					break;
+				case SOPO_TYPE.FUCHSJAGD_FEHLGESCHLAGEN:
+					setModalSopoFuchsjagdFehlgeschlagen(sopo.dokoParty);
+					break;
+				case SOPO_TYPE.FUCHS_AM_END:
+					setModalSopoFuchsAmEnd(sopo.dokoParty);
+					break;
+				case SOPO_TYPE.DULLE_GEFANGEN:
+					setModalSopoDulleGefangen(sopo.dokoParty);
+					break;
+				case SOPO_TYPE.CHARLIE:
+					setModalSopoCharlie(sopo.dokoParty);
+					break;
+				case SOPO_TYPE.CHARLIE_GEFANGEN:
+					setModalSopoCharlieGefangen(sopo.dokoParty);
+					break;
+				default:
+					console.log("type not found")
+
+			}
+		})
+		setModalSopoReDoppelkopf(createBooleanArray(reDoppolkopfCount, 4));
+		setModalSopoContraDoppelkopf(createBooleanArray(contraDoppolkopfCount, 4));
+
+		setModalSopoReFuchsGefangen(createBooleanArray(reFuchsCount, 2));
+		setModalSopoContraFuchsGefangen(createBooleanArray(contraFuchsCount, 2));
+
 		setModalPlayers((prevPlayers) => {
 			return prevPlayers.map((player, index) => {
 				const seatScore = editGame.seatScores[index];
-				if (seatScore){
-					return { 
+				if (seatScore) {
+					return {
 						...player,
-						score: seatScore.score, 
+						score: seatScore.score,
 						party: seatScore.party,
 						solo: editGame.soloPlayer === index ? true : false
 					};
 				}
 				return player;
 			})
-			
+
 		})
 
 		setModalGameType(editGame.dokoGameType);
@@ -297,29 +402,45 @@ const SessionPage = ({ params }: {
 
 		setModalAnsage(editGame.ansage);
 		setModalAnsageVorab(editGame.ansageVorab);
-		
+
 		setGameDetailOpen(true);
 
 	}
 
+
+
 	const openModalNewGame = () => {
-		if (sessionData){
+		setCreateNewGame(true);
+		if (sessionData) {
 			setModalPlayers((prevPlayers) => {
-				return prevPlayers.map((player, index) => {	
-					return { 
+				return prevPlayers.map((player, index) => {
+					return {
 						...player,
 						score: 0,
 						party: (4 < sessionData?.sessionPlayers.length && player.seat === sessionData?.nextDealer) ? PARTY.Inaktiv : PARTY.Contra,
 						solo: false
 					};
-					
-	
+
+
 				})
-				
+
 			})
 		}
 
 		setModalGameId(null);
+
+		setModalSopoFuchsjagdGeschafft(PARTY.Inaktiv);
+		setModalSopoFuchsjagdFehlgeschlagen(PARTY.Inaktiv);
+		setModalSopoFuchsAmEnd(PARTY.Inaktiv);
+		setModalSopoDulleGefangen(PARTY.Inaktiv);
+		setModalSopoCharlie(PARTY.Inaktiv);
+		setModalSopoCharlieGefangen(PARTY.Inaktiv);
+
+		setModalSopoReDoppelkopf([false, false, false, false]);
+		setModalSopoContraDoppelkopf([false, false, false, false]);
+
+		setModalSopoReFuchsGefangen([false, false]);
+		setModalSopoContraFuchsGefangen([false, false]);
 
 		setModalGameType(GAME_TYPE.NORMAL);
 		setModalBock(false);
@@ -353,19 +474,96 @@ const SessionPage = ({ params }: {
 				score: player.score,
 				party: player.party,
 			};
-		
+
 			// Find the index of the player with solo attribute true
 			if (player.solo) {
 				soloPlayerIndex = index;
 			}
 		});
 
+		let sonderpunkte: Sopo[] = []
+
+		modalSopoReDoppelkopf.filter(val => val).forEach(() => {
+			sonderpunkte.push({
+				dokoParty: PARTY.Re,
+				type: SOPO_TYPE.DOPPELKOPF,
+			})
+		})
+
+		modalSopoContraDoppelkopf.filter(val => val).forEach(() => {
+			sonderpunkte.push({
+				dokoParty: PARTY.Contra,
+				type: SOPO_TYPE.DOPPELKOPF,
+			})
+		})
+
+		modalSopoReFuchsGefangen.filter(val => val).forEach(() => {
+			sonderpunkte.push({
+				dokoParty: PARTY.Re,
+				type: SOPO_TYPE.FUCHS_GEFANGEN,
+			})
+		})
+
+		modalSopoContraFuchsGefangen.filter(val => val).forEach(() => {
+			sonderpunkte.push({
+				dokoParty: PARTY.Contra,
+				type: SOPO_TYPE.FUCHS_GEFANGEN,
+			})
+		})
+
+
+
+		if (modalSopoFuchsjagdGeschafft !== PARTY.Inaktiv) {
+			sonderpunkte.push({
+				dokoParty: modalSopoFuchsjagdGeschafft,
+				type: SOPO_TYPE.FUCHSJAGD_GESCHAFFT,
+			})
+		}
+
+		if (modalSopoFuchsjagdFehlgeschlagen !== PARTY.Inaktiv) {
+			sonderpunkte.push({
+				dokoParty: modalSopoFuchsjagdFehlgeschlagen,
+				type: SOPO_TYPE.FUCHSJAGD_FEHLGESCHLAGEN,
+			})
+		}
+
+		if (modalSopoFuchsAmEnd !== PARTY.Inaktiv) {
+			sonderpunkte.push({
+				dokoParty: modalSopoFuchsAmEnd,
+				type: SOPO_TYPE.FUCHS_AM_END,
+			})
+		}
+
+		if (modalSopoDulleGefangen !== PARTY.Inaktiv) {
+			sonderpunkte.push({
+				dokoParty: modalSopoDulleGefangen,
+				type: SOPO_TYPE.DULLE_GEFANGEN,
+			})
+		}
+
+		if (modalSopoCharlie !== PARTY.Inaktiv) {
+			sonderpunkte.push({
+				dokoParty: modalSopoCharlie,
+				type: SOPO_TYPE.CHARLIE,
+			})
+		}
+
+		if (modalSopoCharlieGefangen !== PARTY.Inaktiv) {
+			sonderpunkte.push({
+				dokoParty: modalSopoCharlieGefangen,
+				type: SOPO_TYPE.CHARLIE_GEFANGEN,
+			})
+		}
+
+		let editGame = gameData?.find(game => game.id == modalGameId);
+
+
 		const requestBody = {
 			sessionId: sessionData?.id,
-			dealer: sessionData?.nextDealer,
+			dealer: editGame !== undefined ? editGame.dealer : sessionData?.nextDealer,
 			soloPlayer: soloPlayerIndex,
 			moreBock: modalMoreBock,
-			bock: true, // is calculated in the backend
+			bock: modalBock, // only required for update
 			dokoGameType: modalGameType,
 			winParty: PARTY.Inaktiv, // is also calculated in the backend
 			resultParty: modalResultParty,
@@ -378,74 +576,77 @@ const SessionPage = ({ params }: {
 			ansage: modalAnsage,
 			ansageVorab: modalAnsageVorab,
 			seatScores: seatScores,
-		} 
+			sonderpunkte: sonderpunkte,
+		}
 
+		console.log("request")
 		console.log(requestBody);
 
 		let url = `${apiBaseUrl}/groups/sessions/games/validate`;
 
-		if (actuallyPost){
-			if (modalGameId !== null){
+		if (actuallyPost) {
+			console.log(`actuall post: ${actuallyPost}`)
+			if (modalGameId !== null) {
 				url = `${apiBaseUrl}/groups/sessions/games/${modalGameId}/update`;
 			} else {
 				url = `${apiBaseUrl}/groups/sessions/games/create`;
 			}
-			
+
 		}
 		console.log(`url: ${url}`);
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
+		try {
+			const response = await fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(requestBody),
+			});
 
-            if (!response.ok) {
-                throw new Error('Failed to create game');
-            }
+			if (!response.ok) {
+				throw new Error('Failed to create game');
+			}
 
-            const result = await response.json();
-			console.log(result)	
+			const result = await response.json();
+			console.log(result)
 
 			// put result in state
 
 			setModalPlayers((prevPlayers) => {
 				return prevPlayers.map((player, index) => {
 					const seatScore = result.seatScores[index];
-					if (seatScore){
-						return { 
+					if (seatScore) {
+						return {
 							...player,
-							score: seatScore.score, 
+							score: seatScore.score,
 						};
 					}
 					return player;
 				})
-				
+
 			})
 
-			
-            setError("");
-            //setSuccessMessage("Spiel wurde erfolgreich angelegt!");
 
-            const newGameId = result.id;
-            //router.push(`/groups/${groupData?.id}/sessions/${newSessionId}`);
+			setError("");
+			//setSuccessMessage("Spiel wurde erfolgreich angelegt!");
+
+			const newGameId = result.id;
+			//router.push(`/groups/${groupData?.id}/sessions/${newSessionId}`);
 			//setGameDetailOpen(false)
 			// window.location.reload()
-			if (actuallyPost){
+			if (actuallyPost) {
 				setGameDetailOpen(false)
 				await fetchData();
 			}
-			
-        } catch (error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            } else {
-                setError("An unknown error occurred");
-            }
-        }
+
+		} catch (error) {
+			if (error instanceof Error) {
+				setError(error.message);
+			} else {
+				setError("An unknown error occurred");
+			}
+		}
 
 	}
 
@@ -470,12 +671,12 @@ const SessionPage = ({ params }: {
 						Neues Spiel hinzufügen
 					</button>
 
-					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => alert("hi")}>
+					{/* <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => alert("hi")}>
 						Alle Spiele neu berechnen
-					</button>
+					</button> */}
 				</div>
 
-				
+
 				<div className="overflow-x-auto">
 					<table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
 						<thead>
@@ -534,8 +735,8 @@ const SessionPage = ({ params }: {
 								value={modalGameType}
 								className="block w-full bg-[#1E1E2C] border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 max-w-[150px]"
 								onChange={handleModalGameTypeChange}
-							>	
-							
+							>
+
 								<option value={GAME_TYPE.NORMAL}>{formatString(GAME_TYPE.NORMAL)}</option>
 								<option value={GAME_TYPE.BUBEN_SOLO}>{formatString(GAME_TYPE.BUBEN_SOLO)}</option>
 								<option value={GAME_TYPE.DAMEN_SOLO}>{formatString(GAME_TYPE.DAMEN_SOLO)}</option>
@@ -545,50 +746,81 @@ const SessionPage = ({ params }: {
 
 							</select>
 						</div>
-						<div className='flex place-items-center gap-3'>
-							<span>
-								Herz rumgegangen?
-							</span>
-							<input
-								type="checkbox"
-								checked={modalMoreBock}
-								className="form-checkbox h-6 w-6 text-blue-500 bg-gray-600 border-gray-500 rounded"
-								onChange={() => setModalMoreBock(!modalMoreBock)}
-							/>
+	
+						<div className="flex place-items-center gap-3">
+							<div
+								onClick={() => setModalMoreBock(!modalMoreBock)}
+								className={`cursor-pointer ${modalMoreBock ? 'bg-red-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}
+							>
+								{String.fromCodePoint(0x1F49E)} Herz rum? 
+							</div>
 						</div>
-						{modalBock && <div className={`bg-red-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}>Bock</div>}
-						{modalBockCount > 0 && <div className={`bg-red-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}>Bock verbleibend: {modalBockCount}</div>}
+
+						{!createNewGame && <div className="flex place-items-center gap-3">
+							<div
+								onClick={() => setModalBock(!modalBock)}
+								className={`cursor-pointer ${modalBock ? 'bg-red-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}
+							>
+								{String.fromCodePoint(0x1F410)} Bock 
+							</div>
+						</div>}
+
+						{modalBockCount > 0 && <div className={`bg-red-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}> {String.fromCodePoint(0x1F410)} Bock verbleibend: {modalBockCount}</div>}
 					</div>
 				</div>
-				
+
 				<div className="grid grid-cols-[auto_auto_auto_auto_auto] gap-4 bg-[#2A2A3C] text-gray-200 items-start">
 					{/* Headers */}
 
 					<PlayerColumn data={modalPlayers} setPlayers={setModalPlayers} soloCheckboxDisabled={modalSoloCheckboxDisabled} setSoloCheckbox={updateSoloCheckbox} />
 					<ResultColumn resultParty={modalResultParty} setResultParty={setModalResultParty} resultValue={modaelResultValue} setResultValue={setModalResultValue} />
-					<AnsagenColumn 
-						title="Ansagen" 
-						ansageRe={modalAnsageRe} 
-						setAnsageRe={setModalAnsageRe} 
-						ansageContra={modalAnsageContra}  
+					<AnsagenColumn
+						title="Ansagen"
+						ansageRe={modalAnsageRe}
+						setAnsageRe={setModalAnsageRe}
+						ansageContra={modalAnsageContra}
 						setAnsageContra={setModalAnsageContra}
 						weitereAnsagenParty={modalweitereAnsagenParty}
 						setWeitereAnsagenParty={setModalWeitereAnsagenParty}
 						ansage={modalAnsage}
 						setAnsage={setModalAnsage}
 					/>
-					<AnsagenColumn 
+					<AnsagenColumn
 						title="Vorab"
-						ansageRe={modalAnsageReVorab} 
-						setAnsageRe={setModalAnsageReVorab} 
-						ansageContra={modalAnsageContraVorab}  
+						ansageRe={modalAnsageReVorab}
+						setAnsageRe={setModalAnsageReVorab}
+						ansageContra={modalAnsageContraVorab}
 						setAnsageContra={setModalAnsageContraVorab}
 						weitereAnsagenParty={modalweitereAnsagenPartyVorab}
 						setWeitereAnsagenParty={setModalWeitereAnsagenPartyVorab}
 						ansage={modalAnsageVorab}
 						setAnsage={setModalAnsageVorab}
 					/>
-					<SonderpunkteColumn />
+					<SonderpunkteColumn
+						reFuchsGefangen={modalSopoReFuchsGefangen}
+						setReFuchsGefangen={setModalSopoReFuchsGefangen}
+						contraFuchsGefangen={modalSopoContraFuchsGefangen}
+						setContraFuchsGefangen={setModalSopoContraFuchsGefangen}
+
+						fuchsjagdGeschafft={modalSopoFuchsjagdGeschafft}
+						setFuchsjagdGeschafft={setModalSopoFuchsjagdGeschafft}
+						fuchsjagdFehlgeschlagen={modalSopoFuchsjagdFehlgeschlagen}
+						setFuchsjagdFehlgeschlagen={setModalSopoFuchsjagdFehlgeschlagen}
+						fuchsAmEnd={modalSopoFuchsAmEnd}
+						setFuchsAmEnd={setModalSopoFuchsAmEnd}
+						dulleGefangen={modalSopoDulleGefangen}
+						setDulleGefangen={setModalSopoDulleGefangen}
+						charlie={modalSopoCharlie}
+						setCharlie={setModalSopoCharlie}
+						charlieGefangen={modalSopoCharlieGefangen}
+						setCharlieGefangen={setModalSopoCharlieGefangen}
+
+						reDoppelkopf={modalSopoReDoppelkopf}
+						setReDoppelkopf={setModalSopoReDoppelkopf}
+						contraDoppelkopf={modalSopoContraDoppelkopf}
+						setContraDoppelkopf={setModalSopoContraDoppelkopf}
+
+					/>
 
 				</div>
 				<div>
@@ -600,7 +832,7 @@ const SessionPage = ({ params }: {
 				<div className='flex justify-end items-end space-x-4'>
 					<div className='space-x-4'>
 						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(false)}>Eingaben überprüfen</button>
-						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(true)}>Spiel hinzufügen</button>
+						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(true)}>{!createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'}</button>
 
 					</div>
 				</div>

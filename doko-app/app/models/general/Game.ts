@@ -1,4 +1,4 @@
-import { Party, PARTY, GameType, GAME_TYPE } from "./Constants";
+import { Party, PARTY, GameType, GAME_TYPE, SOPO_TYPE, SopoType } from "./Constants";
 
 export interface Game {
     id: number;
@@ -21,6 +21,8 @@ export interface Game {
     ansageVorab: number;
 
     seatScores: SeatScores;
+
+    sonderpunkte: Sopo[]
 }
 
 export interface SeatScore {
@@ -32,4 +34,8 @@ export interface SeatScores {
     [seatNumber: number]: SeatScore; 
 }
 
+export interface Sopo {
+    dokoParty: Party;
+    type: SopoType;
+}
 

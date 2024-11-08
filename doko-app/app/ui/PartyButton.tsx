@@ -4,6 +4,7 @@ interface PartyButtonProps {
     party: Party;
     win: boolean;
     text: string;
+    size?: number;
 }
 
 const PartyButton: React.FC<PartyButtonProps> = (props) => {
@@ -18,9 +19,10 @@ const PartyButton: React.FC<PartyButtonProps> = (props) => {
 
     const border_color = props.win ? 'border-green-500' : 'border-red-500'
 
+    const size = props.size || 100;
 
     return (
-        <button className={`${border_color} border-2 bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[100px]`}>
+        <button className={`${border_color} border-2 bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[${size}px]`}>
             <span className={`${dynamic_class_name}`}>{party_emoji}{' '}</span>
             <span className={`text-black`}>{props.text}</span>
             {/* <span className={`${dynamic_class_name}`}>{party_emoji}{' '}{props.party.slice(0, 2)}{' '}{props.text}</span> */}

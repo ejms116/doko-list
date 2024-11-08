@@ -48,8 +48,16 @@ public class DokoSession {
         nextDealer = nextDealer % sessionPlayers.size();
     }
 
+    public void removeBock(){
+        bockRemaining -= sessionPlayers.size();
+    }
+
     public void addBock(){
         bockRemaining += sessionPlayers.size();
+    }
+
+    public void addSingleBock(){
+        bockRemaining += 1;
     }
 
     public boolean useBock(){

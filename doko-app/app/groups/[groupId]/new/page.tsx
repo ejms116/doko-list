@@ -11,7 +11,10 @@ import { Group } from "../../../models/general/Group";
 import PlayerSelection from "./PlayerSelection";
 import { Player } from "../../../models/general/Player";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const apiBaseUrl =
+  typeof window === "undefined"  // Check if running on the server
+    ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
+    : process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export type PlayerSelectionProps = {
     id: number;

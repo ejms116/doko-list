@@ -1,13 +1,17 @@
 import GroupRow from "./group-row";
 import { GroupRowProps } from "./group-row";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const apiBaseUrl =
+  typeof window === "undefined"  // Check if running on the server
+    ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
+    : process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const GroupsPage = async () => {
-
+  console.log(`${apiBaseUrl}/groups/all`);
   const res = await fetch(`${apiBaseUrl}/groups/all`, {
     cache: 'no-store',
   });
+  
   const data = await res.json();
 
   const groupRowData = data.map((group: any) => {

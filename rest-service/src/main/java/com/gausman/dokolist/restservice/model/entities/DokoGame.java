@@ -1,6 +1,7 @@
 package com.gausman.dokolist.restservice.model.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gausman.dokolist.restservice.dto.CreateDokoSonderpunkt;
 import com.gausman.dokolist.restservice.model.enums.DokoGameType;
 import com.gausman.dokolist.restservice.model.enums.DokoParty;
 import jakarta.persistence.*;
@@ -9,7 +10,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -57,6 +60,17 @@ public class DokoGame {
     private int ansage = 120;
     private int ansageVorab = 120;
 
-    // TODO Sonderpunkte probably in a new table
+    @OneToMany(mappedBy = "dokoGame", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<DokoGameSonderpunkt> sonderpunkte = new ArrayList<>();
+
+
+    public void addSonderpunkt(CreateDokoSonderpunkt createDokoSonderpunkt) {
+        DokoGameSonderpunkt sp = new DokoGameSonderpunkt();
+        sp.setDokoGame(this);
+        sp.setType(createDokoSonderpunkt.getType());
+        sp.setDokoParty(createDokoSonderpunkt.getDokoParty());
+        this.sonderpunkte.add(sp);
+    }
+
 
 }
