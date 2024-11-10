@@ -28,6 +28,7 @@ public class CreateDokoGameRequest {
     private boolean ansageContra;
     private boolean ansageContraVorab;
     private DokoParty weitereAnsagenParty;
+    private DokoParty weitereAnsagenPartyVorab;
     private int ansage;
     private int ansageVorab;
 

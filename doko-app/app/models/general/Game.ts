@@ -1,5 +1,12 @@
 import { Party, PARTY, GameType, GAME_TYPE, SOPO_TYPE, SopoType } from "./Constants";
 
+export interface GameResponse {
+    dokoGame: Game;
+    errors: string[];
+    warnings: string[];
+    infos: string[];
+}
+
 export interface Game {
     id: number;
     played: Date;

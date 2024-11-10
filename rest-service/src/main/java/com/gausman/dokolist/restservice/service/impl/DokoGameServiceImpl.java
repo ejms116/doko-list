@@ -2,9 +2,11 @@ package com.gausman.dokolist.restservice.service.impl;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
 import com.gausman.dokolist.restservice.dto.CreateDokoSonderpunkt;
+import com.gausman.dokolist.restservice.dto.DokoGameResponse;
 import com.gausman.dokolist.restservice.model.entities.*;
 import com.gausman.dokolist.restservice.model.enums.DokoGameType;
 import com.gausman.dokolist.restservice.model.enums.DokoParty;
+import com.gausman.dokolist.restservice.model.enums.DokoSonderpunktType;
 import com.gausman.dokolist.restservice.repository.DokoGameRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
@@ -18,8 +20,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -47,25 +49,31 @@ public class DokoGameServiceImpl implements DokoGameService {
     }
 
     @Override
-    public DokoGame createGame(CreateDokoGameRequest request) {
+    public DokoGameResponse createGame(CreateDokoGameRequest request) {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
         // Validations
-        List<String> errors = new ArrayList<>();
+        //List<String> errors = new ArrayList<>();
 
+        DokoGame dokoGame = new DokoGame();
+
+        // Create the response object with the game and initialize message lists
+        DokoGameResponse response = new DokoGameResponse(dokoGame);
 
         TransactionStatus status = null;
         if (request.isWriteToDb()) {
             status = transactionManager.getTransaction(new DefaultTransactionDefinition());
         }
-        DokoGame dokoGame;
+
         try {
-            // TODO more validations
+            runDefaultValidations(response, dokoGame, request);
 
             // If there are any validation errors, throw a ValidationException with the list
-            if (!errors.isEmpty()) {
-                throw new ValidationException(errors);
+            if (!response.getErrors().isEmpty()) {
+                throw new ValidationException(response);
+            } else {
+                response.getInfos().add("Spiel erfolgreich geprüft.");
             }
 
 
@@ -75,8 +83,6 @@ public class DokoGameServiceImpl implements DokoGameService {
                 sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
             }
 
-
-            dokoGame = new DokoGame();
             setValuesFromRequest(dokoGame, request);
 
             dokoGame.setDokoSession(dokoSession);
@@ -102,12 +108,11 @@ public class DokoGameServiceImpl implements DokoGameService {
             throw ex;
         }
 
-        return dokoGame;
+        return response;
     }
 
     @Override
-    @Transactional
-    public DokoGame updateGame(Long gameId, CreateDokoGameRequest request) { // TODO handle Bock
+    public DokoGameResponse updateGame(Long gameId, CreateDokoGameRequest request) {
         // Retrieve existing game
         DokoGame dokoGame = dokoGameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
@@ -115,15 +120,18 @@ public class DokoGameServiceImpl implements DokoGameService {
         // Retrieve associated session if any fields related to it need updating
         DokoSession dokoSession = dokoGame.getDokoSession();
 
+        // Create the response object with the game and initialize message lists
+        DokoGameResponse response = new DokoGameResponse(dokoGame);
+
         // Validations
-        List<String> errors = new ArrayList<>();
+        //List<String> errors = new ArrayList<>();
 
         TransactionStatus status = null;
         if (request.isWriteToDb()) {
             status = transactionManager.getTransaction(new DefaultTransactionDefinition());
         }
         try {
-            // TODO more validations
+            runDefaultValidations(response, dokoGame, request);
 
             // Bock
             boolean changeBockToNoBock = dokoGame.isBock() && !request.isBock();
@@ -131,37 +139,44 @@ public class DokoGameServiceImpl implements DokoGameService {
 
             if (changeNoBockToBock) {
                 if (dokoSession.getBockRemaining() < 1){
-                    errors.add("Spiel kann nicht in Bock geändert werden, kein Bock übrig.");
+                    response.getErrors().add("Spiel kann nicht in Bock geändert werden, kein Bock übrig.");
                 } else {
                     dokoGame.setBock(dokoSession.useBock());
+                    response.getWarnings().add("Spiel wurde in Bock geändert.");
                 }
             }
             if (changeBockToNoBock){
                 dokoSession.addSingleBock();
+                response.getWarnings().add("Spiel ist nicht mehr Bock. Ein Bock-Spiel wird wieder hinzugefügt.");
             }
             dokoGame.setBock(request.isBock());
 
             // Herz rum
-            boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
+              boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
             boolean changeNoHerzToHerz = !dokoGame.isMoreBock() && request.isMoreBock();
 
             if (changeHerzToNoHerz){
                 if (dokoSession.getBockRemaining() < dokoSession.getSessionPlayers().size()){
-                    errors.add("Bockrunde kann nicht aufgelöst werden, Bock-Spiele bereits verbraucht");
+                    response.getErrors().add("Bockrunde kann nicht aufgelöst werden, Bock-Spiele bereits verbraucht");
                 } else {
                     dokoSession.removeBock();
+                    response.getWarnings().add("Vorrat an Bock-Spielen wird verringert.");
                 }
             }
 
             if (changeNoHerzToHerz){
                 dokoSession.addBock();
+                response.getWarnings().add("Es werden mehr Bock-Spiele angehängt.");
+
             }
 
             dokoGame.setMoreBock(request.isMoreBock());
 
             // If there are any validation errors, throw a ValidationException with the list
-            if (!errors.isEmpty()) {
-                throw new ValidationException(errors);
+            if (!response.getErrors().isEmpty()) {
+                throw new ValidationException(response);
+            } else {
+                response.getInfos().add("Spiel erfolgreich geprüft.");
             }
 
             // Update fields on dokoGame based on request
@@ -176,7 +191,6 @@ public class DokoGameServiceImpl implements DokoGameService {
                 transactionManager.commit(status);
             }
 
-
         } catch (Exception ex) {
             if (status != null) {
                 transactionManager.rollback(status);
@@ -184,13 +198,225 @@ public class DokoGameServiceImpl implements DokoGameService {
             throw ex;
         }
 
-        return dokoGame;
+        return response;
+    }
+
+    private void runDefaultValidations(DokoGameResponse response, DokoGame dokoGame, CreateDokoGameRequest request){
+        Map<DokoParty, Integer> partyCount = new HashMap<>();
+        partyCount.put(DokoParty.Re, 0);
+        partyCount.put(DokoParty.Contra, 0);
+
+        if (!((request.getResultParty().equals(DokoParty.Re)) || (request.getResultParty().equals(DokoParty.Contra)))){
+            response.getErrors().add("Es muss ein Ergebnis angegeben werden.");
+        }
+
+        // Count occurrences of each DokoParty in seatScores and merge results with initial map
+        Map<DokoParty, Integer> countedParties = request.getSeatScores().values().stream()
+                .collect(Collectors.groupingBy(
+                        DokoGameSeat::getParty,
+                        Collectors.reducing(0, e -> 1, Integer::sum)
+                ));
+
+        // Add countedParties to partyCount to ensure default values are present
+        countedParties.forEach((party, count) ->
+                partyCount.merge(party, count, Integer::sum)
+        );
+
+
+
+        if (isSolo(request)){
+            if (!request.getSonderpunkte().isEmpty()){
+                response.getWarnings().add("Bei Solo werden Sonderpunkte ignoriert.");
+                request.getSonderpunkte().clear();
+            }
+
+            if (partyCount.get(DokoParty.Re) != 1){
+                response.getErrors().add("Bei Solo muss genau ein Spieler Re sein.");
+            }
+
+        }
+
+        if (request.getDokoGameType().equals(DokoGameType.HOCHZEIT_STILL)){
+            if (partyCount.get(DokoParty.Re) != 1){
+                response.getErrors().add("Bei stiller Hochzeit muss genau ein Spieler Re sein.");
+            }
+
+        }
+
+        if (request.getDokoGameType().equals(DokoGameType.HOCHZEIT)){
+            if (!((partyCount.get(DokoParty.Re) == 1) || (partyCount.get(DokoParty.Re) == 2))){
+                response.getErrors().add("Bei Hochzeit müssen ein oder zwei Spieler Re sein.");
+            }
+            DokoGameSeat soloSeat = request.getSeatScores().get(request.getSoloPlayer());
+            if (soloSeat == null) {
+                response.getErrors().add("Bei Hochzeit bitte angeben wer diese gespielt hat.");
+            } else if (!soloSeat.getParty().equals(DokoParty.Re)) {
+                response.getErrors().add("Hochzeit Spieler muss Re sein.");
+            }
+
+        }
+
+        if (request.getDokoGameType().equals(DokoGameType.NORMAL) && (partyCount.get(DokoParty.Re) != 2)){
+            response.getErrors().add("Bei Normalspiel müssen genau zwei Spieler Re sein.");
+        }
+
+        if (isSolo(request) && request.isMoreBock()){
+            response.getWarnings().add("Bei Solo zählt Herz rum nicht.");
+            request.setMoreBock(false);
+        }
+
+        if (!request.getWeitereAnsagenPartyVorab().equals(DokoParty.Inaktiv) &&
+                !request.getWeitereAnsagenParty().equals(request.getWeitereAnsagenPartyVorab())){
+            response.getErrors().add("Dieselbe Partei muss weitere Ansagen (90,60,30,Schwarz) und Vorab-Ansagen machen.");
+        }
+
+        if (request.getAnsageVorab() < request.getAnsage()){
+            response.getErrors().add("Vorab-Ansagen können nicht höher als normale Ansagen sein.");
+        }
+
+        if (!request.isAnsageRe() && request.isAnsageReVorab()){
+            response.getErrors().add("Bei Re-Vorab muss auch noramle Re-Ansage erfolgen.");
+        }
+
+        if (!request.isAnsageContra() && request.isAnsageContraVorab()){
+            response.getErrors().add("Bei Contra-Vorab muss auch noramle Contra-Ansage erfolgen.");
+        }
+
+
+        // Sopo Validierungen
+        Map<DokoSonderpunktType, Integer> countedSopo = request.getSonderpunkte().stream()
+                .collect(Collectors.groupingBy(
+                        CreateDokoSonderpunkt::getType,
+                        Collectors.reducing(0, e -> 1, Integer::sum)
+                ));
+
+        Integer doppelkopfCount = countedSopo.getOrDefault(DokoSonderpunktType.DOPPELKOPF, 0);
+        Integer fuchsGefangenCount = countedSopo.getOrDefault(DokoSonderpunktType.FUCHS_GEFANGEN, 0);
+        Integer fuchsAmEndCount = countedSopo.getOrDefault(DokoSonderpunktType.FUCHS_AM_END, 0);
+        Integer charlieCount = countedSopo.getOrDefault(DokoSonderpunktType.CHARLIE, 0);
+        Integer charlieGefangenCount = countedSopo.getOrDefault(DokoSonderpunktType.CHARLIE_GEFANGEN, 0);
+        Integer fuchsjagdGeschafftCount = countedSopo.getOrDefault(DokoSonderpunktType.FUCHSJAGD_GESCHAFFT, 0);
+        Integer fuchsjagdFehlgeschlagenCount = countedSopo.getOrDefault(DokoSonderpunktType.FUCHSJAGD_FEHLGESCHLAGEN, 0);
+
+        if (doppelkopfCount > 4){
+            response.getErrors().add("Es können maximal 4 Doppelköpfe vorhanden sein.");
+        } else if (doppelkopfCount == 4) {
+            response.getWarnings().add("Es wurden vier Doppelköpfe angegeben. Sind Sie sicher?");
+        }
+
+        if (fuchsGefangenCount > 2){
+            response.getErrors().add("Es können maximal 2 Füchse gefangen worden sein.");
+        }
+
+        // Fuchs am End
+        if (fuchsAmEndCount == 1){
+            if (charlieCount == 1){
+                response.getErrors().add("Bei Fuchs Am End kann es keinen Charlie geben.");
+            }
+            if (charlieGefangenCount == 1){
+                response.getErrors().add("Bei Fuchs Am End kann kein Charlie gefangen worden sein.");
+            }
+            if (fuchsGefangenCount == 2){
+                response.getErrors().add("Bei Fuchs Am End können keine zwei Füchs gefangen worden sein.");
+            }
+
+            CreateDokoSonderpunkt fuchsAmEnd = findByType(request.getSonderpunkte(), DokoSonderpunktType.FUCHS_AM_END)
+                    .orElseThrow(() -> new IllegalStateException("Expected value not found"));;
+
+            if (containsSopoForParty(request.getSonderpunkte(), DokoSonderpunktType.FUCHSJAGD_GESCHAFFT, invertDokoParty(fuchsAmEnd.getDokoParty()))){
+                response.getErrors().add("Bei Fuchs am End kann die andere Partei keine Fuchsjagd geschafft haben.");
+            }
+
+            if (containsSopoForParty(request.getSonderpunkte(), DokoSonderpunktType.FUCHSJAGD_FEHLGESCHLAGEN, fuchsAmEnd.getDokoParty())){
+                response.getErrors().add(String.format("Partei %s hat Fuchs am End, aber %s eine Fuchsjagd angesagt", fuchsAmEnd.getDokoParty(), invertDokoParty(fuchsAmEnd.getDokoParty())));
+            }
+
+        }
+
+        // Fuchsjagd geschafft
+        if (fuchsjagdGeschafftCount == 1){
+            if (fuchsjagdFehlgeschlagenCount == 1){
+                response.getErrors().add("Fuchsjagd geschafft und fehlgeschlagen schließen sich aus.");
+            }
+            if (fuchsGefangenCount > 0){
+                response.getErrors().add("Bei Fuchsjagd geschafft können keine Füchs gefangen worden sein.");
+            }
+        }
+
+        // Fuchsjagd fehlgeschlagen
+        if (fuchsjagdFehlgeschlagenCount == 1){
+            CreateDokoSonderpunkt fuchsjagdFehlgeschlagen = findByType(request.getSonderpunkte(), DokoSonderpunktType.FUCHSJAGD_FEHLGESCHLAGEN)
+                    .orElseThrow(() -> new IllegalStateException("Expected value not found"));
+
+            if (!containsSopoForParty(request.getSonderpunkte(), DokoSonderpunktType.FUCHS_GEFANGEN, fuchsjagdFehlgeschlagen.getDokoParty())){
+                response.getErrors().add(String.format("Partei %s hat eine Fuchsjagd verhindert, aber keinen Fuchs gefangen.", fuchsjagdFehlgeschlagen.getDokoParty()));
+            }
+
+            if (containsSopoForParty(request.getSonderpunkte(), DokoSonderpunktType.FUCHS_GEFANGEN, invertDokoParty(fuchsjagdFehlgeschlagen.getDokoParty()))){
+                response.getErrors().add(String.format("Partei %s hat eine Fuchsjagd verhindert, aber %s hat einen Fuchs gefangen.",
+                        fuchsjagdFehlgeschlagen.getDokoParty(), invertDokoParty(fuchsjagdFehlgeschlagen.getDokoParty())));
+            }
+
+        }
+
+        // Charlie
+        if (charlieCount == 1){
+            CreateDokoSonderpunkt charlie = findByType(request.getSonderpunkte(), DokoSonderpunktType.CHARLIE)
+                    .orElseThrow(() -> new IllegalStateException("Expected value not found"));
+
+            if (containsSopoForParty(request.getSonderpunkte(), DokoSonderpunktType.CHARLIE_GEFANGEN, invertDokoParty(charlie.getDokoParty()))){
+                response.getErrors().add(String.format("Partei %s hat Charlie gemacht, aber %s hat einen Charlie gefangen.",
+                        charlie.getDokoParty(), invertDokoParty(charlie.getDokoParty())));
+            }
+        }
+
+    }
+
+    // Generische Funktion die überprüft, ob Liste Sonderpunkte mindestens einen Eintrag für Party+SopoTyp hat
+    private boolean containsSopoForParty(List<CreateDokoSonderpunkt> list, DokoSonderpunktType sopo, DokoParty party) {
+        return list.stream()
+                .anyMatch(item -> item.getType() == sopo &&
+                        item.getDokoParty() == party);
+    }
+
+
+    private Optional<CreateDokoSonderpunkt> findByType(List<CreateDokoSonderpunkt> list, DokoSonderpunktType type) {
+        return list.stream()
+                .filter(item -> item.getType() == type)
+                .findFirst();
+    }
+
+
+
+    private boolean isSolo(CreateDokoGameRequest request){
+        if (request.getDokoGameType().equals(DokoGameType.BUBEN_SOLO)
+        || request.getDokoGameType().equals(DokoGameType.DAMEN_SOLO)
+        || request.getDokoGameType().equals(DokoGameType.TRUMPF_SOLO)){
+            return true;
+        }
+        return false;
+    }
+
+    private void setSoloPlayer(DokoGame dokoGame, CreateDokoGameRequest request){
+        if (isSolo(request) || request.getDokoGameType().equals(DokoGameType.HOCHZEIT_STILL)){
+            Integer soloId = request.getSeatScores().entrySet().stream()
+                    .filter(entry -> entry.getValue().getParty().equals(DokoParty.Re))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse(-1);
+            dokoGame.setSoloPlayer(soloId);
+        } else if (request.getDokoGameType().equals(DokoGameType.HOCHZEIT)) {
+            dokoGame.setSoloPlayer(request.getSoloPlayer());
+        } else {
+            dokoGame.setSoloPlayer(-1);
+        }
+
     }
 
 
     private void setValuesFromRequest(DokoGame dokoGame, CreateDokoGameRequest request){
         dokoGame.setDealer(request.getDealer());
-        dokoGame.setSoloPlayer(request.getSoloPlayer());
+        setSoloPlayer(dokoGame, request);
         dokoGame.setDokoGameType(request.getDokoGameType());
         dokoGame.setWinParty(request.getWinParty());
         dokoGame.setResultParty(request.getResultParty());

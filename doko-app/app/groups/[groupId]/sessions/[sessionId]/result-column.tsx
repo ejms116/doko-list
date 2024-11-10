@@ -17,7 +17,7 @@ const ResultColumn: React.FC<ResultColumnProps> = ({ resultParty, setResultParty
     const setStates = (win: Party, winnerValue: number) => {
         
         if (winnerValue == resultValue && win == resultParty){
-            setResultValue(winnerValue + 30)
+            setResultValue(Math.min(winnerValue + 30, 120))
         } else {
             setResultValue(winnerValue);
         }

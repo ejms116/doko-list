@@ -1,6 +1,7 @@
 package com.gausman.dokolist.restservice.controller;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoGameRequest;
+import com.gausman.dokolist.restservice.dto.DokoGameResponse;
 import com.gausman.dokolist.restservice.model.entities.DokoGame;
 import com.gausman.dokolist.restservice.service.DokoGameService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,15 +38,15 @@ public class DokoGameController {
     }
 
     @PostMapping("/games/create")
-    public ResponseEntity<DokoGame> create(@RequestBody CreateDokoGameRequest request){
-        DokoGame dokoGame = dokoGameService.createGame(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dokoGame);
+    public ResponseEntity<DokoGameResponse> create(@RequestBody CreateDokoGameRequest request){
+        DokoGameResponse response = dokoGameService.createGame(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/games/{gameId}/update")
-    public ResponseEntity<DokoGame> update(@PathVariable Long gameId, @RequestBody CreateDokoGameRequest request){
-        DokoGame dokoGame = dokoGameService.updateGame(gameId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(dokoGame);
+    public ResponseEntity<DokoGameResponse> update(@PathVariable Long gameId, @RequestBody CreateDokoGameRequest request){
+        DokoGameResponse response = dokoGameService.updateGame(gameId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

@@ -11,6 +11,8 @@ export interface PlayerData {
     party: Party;
     score: number;
     solo: boolean;
+    dealer: boolean;
+    lead: boolean;
 
 }
 

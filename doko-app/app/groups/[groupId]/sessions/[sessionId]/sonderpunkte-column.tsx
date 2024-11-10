@@ -10,6 +10,11 @@ interface SonderpunkteColumnProps {
   contraFuchsGefangen: boolean[];
   setContraFuchsGefangen: React.Dispatch<React.SetStateAction<boolean[]>>;
 
+  reDoppelkopf: boolean[];
+  setReDoppelkopf: React.Dispatch<React.SetStateAction<boolean[]>>;
+  contraDoppelkopf: boolean[];
+  setContraDoppelkopf: React.Dispatch<React.SetStateAction<boolean[]>>;
+
   fuchsjagdGeschafft: Party;
   setFuchsjagdGeschafft: React.Dispatch<React.SetStateAction<Party>>;
   fuchsjagdFehlgeschlagen: Party;
@@ -23,10 +28,7 @@ interface SonderpunkteColumnProps {
   charlieGefangen: Party;
   setCharlieGefangen: React.Dispatch<React.SetStateAction<Party>>;
 
-  reDoppelkopf: boolean[];
-  setReDoppelkopf: React.Dispatch<React.SetStateAction<boolean[]>>;
-  contraDoppelkopf: boolean[];
-  setContraDoppelkopf: React.Dispatch<React.SetStateAction<boolean[]>>;
+
 }
 
 const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (

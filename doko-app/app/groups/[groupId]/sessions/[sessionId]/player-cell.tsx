@@ -31,6 +31,10 @@ const PlayerCell: React.FC<PlayerCellProps> = ({ data, soloCheckboxDisabled, set
         );
     };
 
+    const dealer_emoji = 
+        // data.dealer ? String.fromCodePoint(0x1F91A) :
+        data.lead ? String.fromCodePoint(0x1F91A) : ''
+
 
 
     const onClick = () => {
@@ -41,7 +45,7 @@ const PlayerCell: React.FC<PlayerCellProps> = ({ data, soloCheckboxDisabled, set
     return (
         
         <Fragment>
-            <span className="justify-self-start text-left mr-4">{data.name}</span>
+            <span className="justify-self-start text-left mr-4">{data.name} {dealer_emoji}</span>
             <Checkbox isDisabled={soloCheckboxDisabled} isChecked={data.solo} updateCheckbox={setSoloCheckbox} />
             <button className={`bg-gray-500 text-white font-bold px-2 py-1 rounded-md text-center min-w-[100px]`} onClick={() => onClick()}>
                 <span className={`${dynamic_class_name}`}>{party_emoji}{' '}{data.party}</span>

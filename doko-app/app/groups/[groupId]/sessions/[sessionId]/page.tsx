@@ -20,7 +20,7 @@ import { PlayerData } from "./player-column";
 import { PARTY, Party } from "../../../../models/general/Constants";
 
 import { Session } from "../../../../models/general/Session";
-import { Game, SeatScores, Sopo } from "../../../../models/general/Game";
+import { GameResponse, Game, SeatScores, Sopo } from "../../../../models/general/Game";
 
 import { Checkbox } from "../../../../ui/cards";
 import { SessionPlayer } from "../../../../models/composite/SessionPlayer";
@@ -85,6 +85,8 @@ const SessionPage = ({ params }: {
 	const [modalSopoReDoppelkopf, setModalSopoReDoppelkopf] = useState<boolean[]>([false, false, false, false]);
 	const [modalSopoContraDoppelkopf, setModalSopoContraDoppelkopf] = useState<boolean[]>([false, false, false, false]);
 
+	const [gameResponse, setGameResponse] = useState<GameResponse | null>(null);
+
 	const handleModalGameTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
 		setModalGameType(event.target.value);
 		if (event.target.value === GAME_TYPE.NORMAL) {
@@ -106,10 +108,10 @@ const SessionPage = ({ params }: {
 	}
 
 	useEffect(() => {
-		if (modalGameType !== GAME_TYPE.NORMAL) {
-			setModalSoloCheckboxDisabled(false)
-		} else {
+		if (modalGameType !== GAME_TYPE.HOCHZEIT) {
 			setModalSoloCheckboxDisabled(true)
+		} else {
+			setModalSoloCheckboxDisabled(false)
 		}
 	}, [modalGameType])
 
@@ -162,6 +164,8 @@ const SessionPage = ({ params }: {
 				party: PARTY.Inaktiv,
 				score: 0,
 				solo: false,
+				dealer: true,
+				lead: false,
 			}));
 
 			setModalPlayers(playerDataArray);
@@ -377,7 +381,9 @@ const SessionPage = ({ params }: {
 						...player,
 						score: seatScore.score,
 						party: seatScore.party,
-						solo: editGame.soloPlayer === index ? true : false
+						solo: editGame.soloPlayer === index ? true : false,
+						dealer: editGame.dealer === index ? true : false,
+						lead: editGame.lead === index ? true : false,
 					};
 				}
 				return player;
@@ -418,7 +424,9 @@ const SessionPage = ({ params }: {
 						...player,
 						score: 0,
 						party: (4 < sessionData?.sessionPlayers.length && player.seat === sessionData?.nextDealer) ? PARTY.Inaktiv : PARTY.Contra,
-						solo: false
+						solo: false,
+						dealer: sessionData?.nextDealer === index ? true : false,
+						lead: sessionData?.nextDealer+1 === index ? true : false,
 					};
 
 
@@ -574,6 +582,7 @@ const SessionPage = ({ params }: {
 			ansageContra: modalAnsageContra,
 			ansageContraVorab: modalAnsageContraVorab,
 			weitereAnsagenParty: modalweitereAnsagenParty,
+			weitereAnsagenPartyVorab: modalweitereAnsagenPartyVorab,
 			ansage: modalAnsage,
 			ansageVorab: modalAnsageVorab,
 			seatScores: seatScores,
@@ -602,18 +611,24 @@ const SessionPage = ({ params }: {
 				body: JSON.stringify(requestBody),
 			});
 
+			// if (!response.ok) {
+			// 	throw new Error('Failed to create game');
+			// }
+
+			const result: GameResponse = await response.json();
+			console.log(result)
+
+			// put result in state
+			setGameResponse(result);
+
+
 			if (!response.ok) {
 				throw new Error('Failed to create game');
 			}
 
-			const result = await response.json();
-			console.log(result)
-
-			// put result in state
-
 			setModalPlayers((prevPlayers) => {
 				return prevPlayers.map((player, index) => {
-					const seatScore = result.seatScores[index];
+					const seatScore = result.dokoGame.seatScores[index];
 					if (seatScore) {
 						return {
 							...player,
@@ -629,12 +644,13 @@ const SessionPage = ({ params }: {
 			setError("");
 			//setSuccessMessage("Spiel wurde erfolgreich angelegt!");
 
-			const newGameId = result.id;
+			const newGameId = result.dokoGame.id;
 			//router.push(`/groups/${groupData?.id}/sessions/${newSessionId}`);
 			//setGameDetailOpen(false)
 			// window.location.reload()
 			if (actuallyPost) {
 				setGameDetailOpen(false)
+				setGameResponse(null);
 				await fetchData();
 			}
 
@@ -647,6 +663,11 @@ const SessionPage = ({ params }: {
 			}
 		}
 
+	}
+
+	const closeModal = () => {
+		setGameDetailOpen(false)
+		setGameResponse(null);
 	}
 
 	if (loading) return <p>Loading...</p>;
@@ -723,9 +744,9 @@ const SessionPage = ({ params }: {
 				</div>
 			</div>
 
-			<Modal open={gameDetailOpen} onClose={() => setGameDetailOpen(false)}>
+			<Modal open={gameDetailOpen} onClose={closeModal} title={createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'} >
 				<div className='grid py-4'>
-					<h1 className='text-lg font-bold py-2'>Neues Spiel hinzufügen</h1>
+					{/* <h1 className='text-lg font-bold py-2'>{createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'}</h1> */}
 					<div className='flex place-items-center gap-3'>
 						<div className='flex place-items-center gap-3'>
 							<span>Spieltyp</span>
@@ -745,13 +766,13 @@ const SessionPage = ({ params }: {
 
 							</select>
 						</div>
-	
+
 						<div className="flex place-items-center gap-3">
 							<div
 								onClick={() => setModalMoreBock(!modalMoreBock)}
 								className={`cursor-pointer ${modalMoreBock ? 'bg-red-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}
 							>
-								{String.fromCodePoint(0x1F49E)} Herz rum? 
+								{String.fromCodePoint(0x1F49E)} Herz rum?
 							</div>
 						</div>
 
@@ -760,7 +781,7 @@ const SessionPage = ({ params }: {
 								onClick={() => setModalBock(!modalBock)}
 								className={`cursor-pointer ${modalBock ? 'bg-red-500' : 'bg-gray-500'} text-white font-bold px-2 py-1 rounded-md text-center min-w-[80px]`}
 							>
-								{String.fromCodePoint(0x1F410)} Bock 
+								{String.fromCodePoint(0x1F410)} Bock
 							</div>
 						</div>}
 
@@ -822,13 +843,29 @@ const SessionPage = ({ params }: {
 					/>
 
 				</div>
-				<div>
-					<ul>
-						<li className='text-red-500 text-sm'>Fehler: Anzahl Füchse gefangen größer als 2</li>
-						<li className='text-red-500 text-sm'>Fehler: Ansagen passen nicht zu Vorab-Ansagen</li>
-					</ul>
-				</div>
-				<div className='flex justify-end items-end space-x-4'>
+				{gameResponse && (
+					<div>
+						<ul>
+							{gameResponse.infos && gameResponse.infos.map((err, index) => (
+								<li key={`info-${index}`} className='text-green-500 text-sm'>
+									{err}
+								</li>
+							))}
+							{gameResponse.warnings && gameResponse.warnings.map((err, index) => (
+								<li key={`warning-${index}`} className='text-yellow-500 text-sm'>
+									{err}
+								</li>
+							))}
+							{gameResponse.errors && gameResponse.errors.map((err, index) => (
+								<li key={`error-${index}`} className='text-red-500 text-sm'>
+									{err}
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+
+				<div className='flex justify-end items-end space-x-4 mt-4'>
 					<div className='space-x-4'>
 						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(false)}>Eingaben überprüfen</button>
 						<button className='bg-blue-600 text-white py-1 px-3 p-2 rounded hover:bg-blue-700' onClick={() => postGame(true)}>{createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'}</button>
