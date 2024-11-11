@@ -12,4 +12,6 @@ public interface DokoSessionService {
     List<DokoSession> findAllByGroupId(Long groupId);
 
     DokoSession createSession(CreateDokoSessionRequest request);
+
+    void deleteSessionById(Long id);
 }

@@ -1,4 +1,4 @@
-package com.gausman.dokolist.restservice.util;
+package com.gausman.dokolist.restservice.exception;
 
 import com.gausman.dokolist.restservice.dto.DokoGameResponse;
 

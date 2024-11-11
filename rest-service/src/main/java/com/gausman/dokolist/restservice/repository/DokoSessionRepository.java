@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface DokoSessionRepository extends JpaRepository<DokoSession,Long> {
     List<DokoSession> findByDokoGroup_IdOrderByPlayedAsc(Long groupId);
+
 }

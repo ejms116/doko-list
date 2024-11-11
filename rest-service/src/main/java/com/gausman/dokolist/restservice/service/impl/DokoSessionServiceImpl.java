@@ -1,6 +1,7 @@
 package com.gausman.dokolist.restservice.service.impl;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoSessionRequest;
+import com.gausman.dokolist.restservice.exception.SessionNotFoundException;
 import com.gausman.dokolist.restservice.model.entities.DokoGroup;
 import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 import com.gausman.dokolist.restservice.model.entities.DokoSession;
@@ -61,4 +62,14 @@ public class DokoSessionServiceImpl implements DokoSessionService {
 
         return dokoSessionRepository.save(session);
     }
+
+    @Override
+    public void deleteSessionById(Long id) {
+        if (!dokoSessionRepository.existsById(id)) {
+            throw new SessionNotFoundException("Session with ID " + id + " not found.");
+        }
+        dokoSessionRepository.deleteById(id);
+    }
+
+
 }

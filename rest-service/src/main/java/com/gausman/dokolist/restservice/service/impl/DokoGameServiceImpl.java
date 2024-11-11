@@ -12,12 +12,11 @@ import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
 import com.gausman.dokolist.restservice.service.DokoGameService;
 
-import com.gausman.dokolist.restservice.util.ValidationException;
+import com.gausman.dokolist.restservice.exception.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.*;
@@ -369,6 +368,33 @@ public class DokoGameServiceImpl implements DokoGameService {
                         charlie.getDokoParty(), invertDokoParty(charlie.getDokoParty())));
             }
         }
+
+        if (charlieGefangenCount == 2){
+            if (charlieCount == 1){
+                response.getErrors().add("Bei zwei gefangenen Charlie kann nicht auch Charlie gemacht worden sein.");
+            }
+
+            List<CreateDokoSonderpunkt> charlieGefangen = request.getSonderpunkte().stream().filter(
+                    item -> item.getType().equals(DokoSonderpunktType.CHARLIE_GEFANGEN)
+            ).toList();
+
+            if (!allHaveSameParty(charlieGefangen)){
+                response.getErrors().add("Bei zwei gefangenen Charlie müssen diese von derselben Partei sein.");
+            }
+
+
+        }
+
+    }
+
+    private boolean allHaveSameParty(List<CreateDokoSonderpunkt> list){
+        if (list.isEmpty()){
+            return true;
+        }
+        DokoParty firstParty = list.get(0).getDokoParty();
+
+        return list.stream()
+                .allMatch(item -> item.getDokoParty().equals(firstParty));
 
     }
 

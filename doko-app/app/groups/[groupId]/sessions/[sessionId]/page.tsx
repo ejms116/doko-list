@@ -32,6 +32,8 @@ import { formatString } from "../../../../models/general/Util";
 
 import { SopoType, SOPO_TYPE } from "../../../../models/general/Constants";
 
+import Link from "next/link";
+
 const apiBaseUrl =
 	typeof window === "undefined"  // Check if running on the server
 		? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
@@ -80,7 +82,7 @@ const SessionPage = ({ params }: {
 	const [modalSopoFuchsAmEnd, setModalSopoFuchsAmEnd] = useState<Party>(PARTY.Inaktiv);
 	const [modalSopoDulleGefangen, setModalSopoDulleGefangen] = useState<Party>(PARTY.Inaktiv);
 	const [modalSopoCharlie, setModalSopoCharlie] = useState<Party>(PARTY.Inaktiv);
-	const [modalSopoCharlieGefangen, setModalSopoCharlieGefangen] = useState<Party>(PARTY.Inaktiv);
+	const [modalSopoCharlieGefangen, setModalSopoCharlieGefangen] = useState<Party[]>([PARTY.Inaktiv, PARTY.Inaktiv]);
 
 	const [modalSopoReDoppelkopf, setModalSopoReDoppelkopf] = useState<boolean[]>([false, false, false, false]);
 	const [modalSopoContraDoppelkopf, setModalSopoContraDoppelkopf] = useState<boolean[]>([false, false, false, false]);
@@ -320,13 +322,14 @@ const SessionPage = ({ params }: {
 		setModalSopoFuchsAmEnd(PARTY.Inaktiv);
 		setModalSopoDulleGefangen(PARTY.Inaktiv);
 		setModalSopoCharlie(PARTY.Inaktiv);
-		setModalSopoCharlieGefangen(PARTY.Inaktiv);
+		setModalSopoCharlieGefangen([PARTY.Inaktiv, PARTY.Inaktiv]);
 
 		let reDoppolkopfCount = 0;
 		let contraDoppolkopfCount = 0;
 		let reFuchsCount = 0;
 		let contraFuchsCount = 0;
 
+		let sopoCharlieGefangenTemp: Party[] = []
 
 		editGame.sonderpunkte.map((sopo: Sopo) => {
 			switch (sopo.type) {
@@ -360,7 +363,9 @@ const SessionPage = ({ params }: {
 					setModalSopoCharlie(sopo.dokoParty);
 					break;
 				case SOPO_TYPE.CHARLIE_GEFANGEN:
-					setModalSopoCharlieGefangen(sopo.dokoParty);
+					sopoCharlieGefangenTemp.push(sopo.dokoParty);
+					// setModalSopoCharlieGefangen(sopo.dokoParty);
+
 					break;
 				default:
 					console.log("type not found")
@@ -372,6 +377,8 @@ const SessionPage = ({ params }: {
 
 		setModalSopoReFuchsGefangen(createBooleanArray(reFuchsCount, 2));
 		setModalSopoContraFuchsGefangen(createBooleanArray(contraFuchsCount, 2));
+
+		setModalSopoCharlieGefangen(sopoCharlieGefangenTemp);
 
 		setModalPlayers((prevPlayers) => {
 			return prevPlayers.map((player, index) => {
@@ -442,7 +449,7 @@ const SessionPage = ({ params }: {
 		setModalSopoFuchsAmEnd(PARTY.Inaktiv);
 		setModalSopoDulleGefangen(PARTY.Inaktiv);
 		setModalSopoCharlie(PARTY.Inaktiv);
-		setModalSopoCharlieGefangen(PARTY.Inaktiv);
+		setModalSopoCharlieGefangen([PARTY.Inaktiv, PARTY.Inaktiv]);
 
 		setModalSopoReDoppelkopf([false, false, false, false]);
 		setModalSopoContraDoppelkopf([false, false, false, false]);
@@ -556,12 +563,21 @@ const SessionPage = ({ params }: {
 			})
 		}
 
-		if (modalSopoCharlieGefangen !== PARTY.Inaktiv) {
+
+
+		// if (modalSopoCharlieGefangen !== PARTY.Inaktiv) {
+		// 	sonderpunkte.push({
+		// 		dokoParty: modalSopoCharlieGefangen,
+		// 		type: SOPO_TYPE.CHARLIE_GEFANGEN,
+		// 	})
+		// }
+
+		modalSopoCharlieGefangen.filter(val => val != PARTY.Inaktiv).forEach((party: Party) => {
 			sonderpunkte.push({
-				dokoParty: modalSopoCharlieGefangen,
+				dokoParty: party,
 				type: SOPO_TYPE.CHARLIE_GEFANGEN,
 			})
-		}
+		})
 
 		let editGame = gameData?.find(game => game.id == modalGameId);
 
@@ -683,9 +699,14 @@ const SessionPage = ({ params }: {
 			{/* <h1>GroupId: {params.groupId}, SessionId: {params.sessionId} </h1>
 			<h1>List games...</h1> */}
 
-			<div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
+			{/* <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4"> */}
 				<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
 					<h2 className="text-2xl font-semibold text-gray-300">{`Doppelkopf bei ${sessionData.location} am ${playedDate.toLocaleString()}`}</h2>
+					<Link href={`/groups/${params.groupId}`}>
+						<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+							Zurück zur Gruppe
+						</button>
+					</Link>
 
 					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={openModalNewGame}>
 						Neues Spiel hinzufügen
@@ -742,7 +763,7 @@ const SessionPage = ({ params }: {
 						</tbody>
 					</table>
 				</div>
-			</div>
+			{/* </div> */}
 
 			<Modal open={gameDetailOpen} onClose={closeModal} title={createNewGame ? 'Spiel hinzufügen' : 'Spiel ändern'} >
 				<div className='grid py-4'>

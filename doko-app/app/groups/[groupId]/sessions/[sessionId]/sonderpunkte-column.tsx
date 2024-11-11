@@ -25,15 +25,13 @@ interface SonderpunkteColumnProps {
   setDulleGefangen: React.Dispatch<React.SetStateAction<Party>>;
   charlie: Party;
   setCharlie: React.Dispatch<React.SetStateAction<Party>>;
-  charlieGefangen: Party;
-  setCharlieGefangen: React.Dispatch<React.SetStateAction<Party>>;
-
-
+  charlieGefangen: Party[];
+  setCharlieGefangen: React.Dispatch<React.SetStateAction<Party[]>>;
 }
 
 const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
-  { reFuchsGefangen, setReFuchsGefangen, contraFuchsGefangen, setContraFuchsGefangen, 
-    fuchsjagdGeschafft, setFuchsjagdGeschafft, fuchsjagdFehlgeschlagen, setFuchsjagdFehlgeschlagen, fuchsAmEnd, setFuchsAmEnd, 
+  { reFuchsGefangen, setReFuchsGefangen, contraFuchsGefangen, setContraFuchsGefangen,
+    fuchsjagdGeschafft, setFuchsjagdGeschafft, fuchsjagdFehlgeschlagen, setFuchsjagdFehlgeschlagen, fuchsAmEnd, setFuchsAmEnd,
     dulleGefangen, setDulleGefangen, charlie, setCharlie, charlieGefangen, setCharlieGefangen,
     reDoppelkopf, setReDoppelkopf, contraDoppelkopf, setContraDoppelkopf }
 ) => {
@@ -45,12 +43,23 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
   };
 
   const updateParty = (currentParty: Party, otherParty: Party, setState: React.Dispatch<React.SetStateAction<Party>>) => {
-    if (currentParty === otherParty){
+    if (currentParty === otherParty) {
       setState(PARTY.Inaktiv);
     } else {
       setState(otherParty);
     }
-    
+  }
+
+  const updatePartyIndex = (currentParty: Party, otherParty: Party, setState: React.Dispatch<React.SetStateAction<Party[]>>, index: number) => {
+    if (currentParty === otherParty) {
+      setState((prevArray) =>
+        prevArray.map((party, i) => (i === index ? PARTY.Inaktiv : party))
+      );
+    } else {
+      setState((prevArray) =>
+        prevArray.map((party, i) => (i === index ? otherParty : party))
+      );
+    }
   }
 
   return (
@@ -83,7 +92,7 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
         <Checkbox isDisabled={false} isChecked={contraDoppelkopf[2]} updateCheckbox={() => toggleBool(2, setContraDoppelkopf)} />
         <Checkbox isDisabled={false} isChecked={contraDoppelkopf[3]} updateCheckbox={() => toggleBool(3, setContraDoppelkopf)} />
       </div>
-      
+
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={reFuchsGefangen[0]} updateCheckbox={() => toggleBool(0, setReFuchsGefangen)} />
         <Checkbox isDisabled={false} isChecked={reFuchsGefangen[1]} updateCheckbox={() => toggleBool(1, setReFuchsGefangen)} />
@@ -94,14 +103,14 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
         <SpiderWeb />
       </div>
       <div className="text-center">
-      <Checkbox isDisabled={false} isChecked={contraFuchsGefangen[0]} updateCheckbox={() => toggleBool(0, setContraFuchsGefangen)} />
-      <Checkbox isDisabled={false} isChecked={contraFuchsGefangen[1]} updateCheckbox={() => toggleBool(1, setContraFuchsGefangen)} />
+        <Checkbox isDisabled={false} isChecked={contraFuchsGefangen[0]} updateCheckbox={() => toggleBool(0, setContraFuchsGefangen)} />
+        <Checkbox isDisabled={false} isChecked={contraFuchsGefangen[1]} updateCheckbox={() => toggleBool(1, setContraFuchsGefangen)} />
 
       </div>
 
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={fuchsjagdGeschafft === PARTY.Re}
-          updateCheckbox={() => updateParty(fuchsjagdGeschafft, PARTY.Re, setFuchsjagdGeschafft) }
+          updateCheckbox={() => updateParty(fuchsjagdGeschafft, PARTY.Re, setFuchsjagdGeschafft)}
         />
       </div>
       <div className="text-center">
@@ -111,13 +120,13 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
       </div>
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={fuchsjagdGeschafft === PARTY.Contra}
-            updateCheckbox={() => updateParty(fuchsjagdGeschafft, PARTY.Contra, setFuchsjagdGeschafft) }
-          />
+          updateCheckbox={() => updateParty(fuchsjagdGeschafft, PARTY.Contra, setFuchsjagdGeschafft)}
+        />
       </div>
 
       <div className="text-center">
-      <Checkbox isDisabled={false} isChecked={fuchsjagdFehlgeschlagen === PARTY.Re}
-          updateCheckbox={() => updateParty(fuchsjagdFehlgeschlagen, PARTY.Re, setFuchsjagdFehlgeschlagen) }
+        <Checkbox isDisabled={false} isChecked={fuchsjagdFehlgeschlagen === PARTY.Re}
+          updateCheckbox={() => updateParty(fuchsjagdFehlgeschlagen, PARTY.Re, setFuchsjagdFehlgeschlagen)}
         />
       </div>
       <div className="text-center">
@@ -126,15 +135,15 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
         <Fail />
       </div>
       <div className="text-center">
-      <Checkbox isDisabled={false} isChecked={fuchsjagdFehlgeschlagen === PARTY.Contra}
-            updateCheckbox={() => updateParty(fuchsjagdFehlgeschlagen, PARTY.Contra, setFuchsjagdFehlgeschlagen) }
-          />
+        <Checkbox isDisabled={false} isChecked={fuchsjagdFehlgeschlagen === PARTY.Contra}
+          updateCheckbox={() => updateParty(fuchsjagdFehlgeschlagen, PARTY.Contra, setFuchsjagdFehlgeschlagen)}
+        />
       </div>
 
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={fuchsAmEnd === PARTY.Re}
-            updateCheckbox={() => updateParty(fuchsAmEnd, PARTY.Re, setFuchsAmEnd) }
-          />
+          updateCheckbox={() => updateParty(fuchsAmEnd, PARTY.Re, setFuchsAmEnd)}
+        />
       </div>
       <div className="text-center">
         <Fuchs />
@@ -142,29 +151,29 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
       </div>
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={fuchsAmEnd === PARTY.Contra}
-              updateCheckbox={() => updateParty(fuchsAmEnd, PARTY.Contra, setFuchsAmEnd) }
-            />
+          updateCheckbox={() => updateParty(fuchsAmEnd, PARTY.Contra, setFuchsAmEnd)}
+        />
       </div>
 
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={dulleGefangen === PARTY.Re}
-              updateCheckbox={() => updateParty(dulleGefangen, PARTY.Re, setDulleGefangen) }
-            />
+          updateCheckbox={() => updateParty(dulleGefangen, PARTY.Re, setDulleGefangen)}
+        />
       </div>
       <div className="text-center">
         <Dulle />
         <SpiderWeb />
       </div>
       <div className="text-center">
-      <Checkbox isDisabled={false} isChecked={dulleGefangen === PARTY.Contra}
-              updateCheckbox={() => updateParty(dulleGefangen, PARTY.Contra, setDulleGefangen) }
-            />
+        <Checkbox isDisabled={false} isChecked={dulleGefangen === PARTY.Contra}
+          updateCheckbox={() => updateParty(dulleGefangen, PARTY.Contra, setDulleGefangen)}
+        />
       </div>
 
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={charlie === PARTY.Re}
-                updateCheckbox={() => updateParty(charlie, PARTY.Re, setCharlie) }
-              />
+          updateCheckbox={() => updateParty(charlie, PARTY.Re, setCharlie)}
+        />
       </div>
       <div className="text-center">
         <Charlie />
@@ -172,25 +181,31 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
       </div>
       <div className="text-center">
         <Checkbox isDisabled={false} isChecked={charlie === PARTY.Contra}
-                  updateCheckbox={() => updateParty(charlie, PARTY.Contra, setCharlie) }
-                />
+          updateCheckbox={() => updateParty(charlie, PARTY.Contra, setCharlie)}
+        />
       </div>
 
       <div className="text-center">
-        <Checkbox isDisabled={false} isChecked={charlieGefangen === PARTY.Re}
-                  updateCheckbox={() => updateParty(charlieGefangen, PARTY.Re, setCharlieGefangen) }
-                />
+        <Checkbox isDisabled={false} isChecked={charlieGefangen[0] === PARTY.Re}
+          updateCheckbox={() => updatePartyIndex(charlieGefangen[0], PARTY.Re, setCharlieGefangen, 0)}
+        />
+        <Checkbox isDisabled={false} isChecked={charlieGefangen[1] === PARTY.Re}
+          updateCheckbox={() => updatePartyIndex(charlieGefangen[1], PARTY.Re, setCharlieGefangen, 1)}
+        />
       </div>
       <div className="text-center">
         <Charlie />
         <Fail />
       </div>
       <div className="text-center">
-        <Checkbox isDisabled={false} isChecked={charlieGefangen === PARTY.Contra}
-                    updateCheckbox={() => updateParty(charlieGefangen, PARTY.Contra, setCharlieGefangen) }
-                  />
-      </div>
+        <Checkbox isDisabled={false} isChecked={charlieGefangen[0] === PARTY.Contra}
+          updateCheckbox={() => updatePartyIndex(charlieGefangen[0], PARTY.Contra, setCharlieGefangen, 0)}
+        />
 
+        <Checkbox isDisabled={false} isChecked={charlieGefangen[1] === PARTY.Contra}
+          updateCheckbox={() => updatePartyIndex(charlieGefangen[1], PARTY.Contra, setCharlieGefangen, 1)}
+        />
+      </div>
     </div>
   );
 };

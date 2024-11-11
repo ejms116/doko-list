@@ -1,5 +1,6 @@
 import GroupRow from "./group-row";
 import { GroupRowProps } from "./group-row";
+import Link from "next/link";
 
 const apiBaseUrl =
   typeof window === "undefined"  // Check if running on the server
@@ -27,6 +28,11 @@ const GroupsPage = async () => {
     <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
 				<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
 					<h2 className="text-2xl font-semibold text-gray-300">Alle Doppelkopf Gruppen</h2>
+          <Link href={`/groups/new`}>
+						<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+							Neue Gruppe anlegen
+						</button>
+					</Link>
 				</div>
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">

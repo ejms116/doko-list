@@ -1,6 +1,7 @@
 package com.gausman.dokolist.restservice.controller;
 
 import com.gausman.dokolist.restservice.dto.CreateDokoSessionRequest;
+import com.gausman.dokolist.restservice.exception.SessionNotFoundException;
 import com.gausman.dokolist.restservice.model.entities.DokoSession;
 import com.gausman.dokolist.restservice.service.DokoSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,5 +51,17 @@ public class DokoSessionController {
         DokoSession session = dokoSessionService.createSession(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(session);
     }
+    @DeleteMapping("/sessions/{id}/delete")
+    public ResponseEntity<String> deleteSession(@PathVariable Long id) {
+        try {
+            dokoSessionService.deleteSessionById(id);
+            return ResponseEntity.ok("Session deleted successfully.");
+        } catch (SessionNotFoundException e) {
+            return ResponseEntity.status(404).body("Session not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred while deleting the session.");
+        }
+    }
+
 
 }

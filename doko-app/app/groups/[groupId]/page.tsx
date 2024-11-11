@@ -51,7 +51,7 @@ const GroupPage = async ({ params }: {
 
         return {
             id: session.id,
-            played: playedDate.toLocaleString(),
+            played: playedDate.toLocaleString('de-De', { timeZone: 'CET' }),
             scores: scores,
             location: session.location,
         };
