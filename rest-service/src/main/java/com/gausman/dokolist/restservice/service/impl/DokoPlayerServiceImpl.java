@@ -23,8 +23,4 @@ public class DokoPlayerServiceImpl implements DokoPlayerService {
         return dokoPlayerRepository.findAll();
     }
 
-    @Override
-    public DokoPlayer getByKindeId(String id) {
-        return dokoPlayerRepository.findByKindeId(id);
-    }
 }
