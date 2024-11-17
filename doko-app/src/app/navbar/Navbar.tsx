@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 
-import { LogoutLink, useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-
 import { RegisterLink, LoginLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import Spinner from '../ui/Spinner';
 
 import Image from 'next/image';
 
 const Navbar = () => {
-  const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
+
+  const isAuthenticated = false;
+  const isLoading = false;
 
   return (
     <div className="bg-gray-800 text-gray-200 shadow-lg p-4">
@@ -75,14 +75,13 @@ const Navbar = () => {
             )} */}
 
           {isAuthenticated && (
-            <LogoutLink className='hover:bg-zinc-800 rounded-md w-[90%] transition inline-block'>
+
               <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
                 Logout
               </button>
-            </LogoutLink>
           )}
 
-          {user?.picture && (
+          {/* {user?.picture && (
             <Link href="/dashboard">
               <Image
                 src={user?.picture}
@@ -100,7 +99,7 @@ const Navbar = () => {
                 {user?.given_name?.[0]}
               </div>
             </Link>
-          )}
+          )} */}
         </div>
 
       </div>

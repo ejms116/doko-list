@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useEffect, useState } from 'react';
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { redirect, useRouter } from 'next/navigation';
 import { Player } from '../models/general/Player';
 const apiBaseUrl =
@@ -12,36 +11,35 @@ const apiBaseUrl =
 
 const Dashboard = () => {
     const router = useRouter();
-    const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
     const [player, setPlayer] = useState<Player>();
     //console.log(user)
 
 
-    const fetchData = async () => {
-        if (user?.id !== undefined){
-            const res = await fetch(`${apiBaseUrl}/players/kinde/${user?.id}`, {
-                cache: 'no-store',
-              });
+    // const fetchData = async () => {
+    //     if (user?.id !== undefined){
+    //         const res = await fetch(`${apiBaseUrl}/players/kinde/${user?.id}`, {
+    //             cache: 'no-store',
+    //           });
               
-              console.log(`res:`)
-              console.log(res)
-              const data = await res.json();
-              console.log(`data:`)
-              console.log(data)
-              setPlayer(data);
-        }
+    //           console.log(`res:`)
+    //           console.log(res)
+    //           const data = await res.json();
+    //           console.log(`data:`)
+    //           console.log(data)
+    //           setPlayer(data);
+    //     }
   
-    }
+    // }
 
-    useEffect(() => {
-        fetchData()
-    }, [user?.id])
+    // useEffect(() => {
+    //     fetchData()
+    // }, [user?.id])
 
     
-    if (!isAuthenticated){
-        //router.push('/api/auth/login')
-        return <p>Nicht eingeloggt</p>
-    }
+    // if (!isAuthenticated){
+    //     //router.push('/api/auth/login')
+    //     return <p>Nicht eingeloggt</p>
+    // }
 
     return (
         <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
@@ -50,7 +48,7 @@ const Dashboard = () => {
             </div>
             <div className="overflow-x-auto">
                 <h1>Alle meine Gruppen</h1>
-                {user?.id && <p>{user.id}</p>}
+                
                 {player && <p>{player.name}</p>}
 
             </div>
