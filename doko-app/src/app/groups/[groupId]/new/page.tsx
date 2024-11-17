@@ -112,7 +112,7 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
 
             const result = await response.json();
             setError("");
-            setSuccessMessage("Abend wurde erfolgreich angelegt!");
+            setSuccessMessage("Abend wurde erfolgreich angelegt! Weiterleitung...");
 
             const newSessionId = result.id;
             router.push(`/groups/${groupData?.id}/sessions/${newSessionId}`);
@@ -125,21 +125,6 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
             }
         }
     };
-
-    // const test = () => {
-    //     // This can be used for testing purposes
-    //     console.log(selectedPlayers);
-    // };
-
-    // const togglePlayerChecked = (id: number) => {
-    //     setAllPlayers(prevPlayers =>
-    //         prevPlayers.map(player =>
-    //             player.id === id
-    //                 ? { ...player, checked: !player.checked }
-    //                 : player
-    //         )
-    //     );
-    // };
 
     if (!groupData) {
         return <p>Loading...</p>;

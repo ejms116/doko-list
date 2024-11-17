@@ -78,7 +78,6 @@ const PlayerSelection: React.FC<PlayerListProps> = ({ title, players, setPlayers
                                     key={player.id} 
                                     id={player.id} 
                                     name={player.player.name} 
-                                    email={player.player.email} 
                                     checked={player.checked}
                                     onToggle={() => togglePlayerChecked(player.id)}
                                 />

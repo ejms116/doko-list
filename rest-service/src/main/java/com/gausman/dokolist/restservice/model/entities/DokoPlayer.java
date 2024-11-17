@@ -13,13 +13,16 @@ import java.util.Set;
 @Entity
 @Setter
 @Getter
+@Table(indexes = @Index(name = "idx_kinde_id", columnList = "kindeId"))
 public class DokoPlayer {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String name;
-    private String email;
+
+    @Column(nullable = false)
+    private String kindeId;
 
     @OneToMany(mappedBy = "founder")
     @JsonIgnore

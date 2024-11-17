@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface DokoPlayerService {
     DokoPlayer save(DokoPlayer dokoPlayer);
-
     List<DokoPlayer> findAll();
+
+    DokoPlayer getByKindeId(String kindeId);
 }

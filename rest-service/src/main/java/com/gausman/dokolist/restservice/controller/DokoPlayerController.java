@@ -22,4 +22,9 @@ public class DokoPlayerController {
     public List<DokoPlayer> findAll(){
         return dokoPlayerService.findAll();
     }
+
+    @GetMapping("/kinde/{kindeId}")
+    public DokoPlayer getByKindeId(@PathVariable String kindeId){
+        return dokoPlayerService.getByKindeId(kindeId);
+    }
 }

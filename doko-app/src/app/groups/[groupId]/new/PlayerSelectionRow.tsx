@@ -8,13 +8,12 @@ import { CSS } from "@dnd-kit/utilities";
 interface PlayerSelectionRowProps {
     id: number;
     name: string;
-    email: string;
     checked: boolean;
     onToggle: () => void;
 
 }
 
-const PlayerSelectionRow: React.FC<PlayerSelectionRowProps> = ({ id, name, email, checked, onToggle }) => {
+const PlayerSelectionRow: React.FC<PlayerSelectionRowProps> = ({ id, name, checked, onToggle }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id });
     
@@ -41,7 +40,7 @@ const PlayerSelectionRow: React.FC<PlayerSelectionRowProps> = ({ id, name, email
                 onPointerDown={(e) => e.stopPropagation()}
             />
             <span>
-                {`${name} (${email})`}
+                {`${name}`}
             </span>
 
 

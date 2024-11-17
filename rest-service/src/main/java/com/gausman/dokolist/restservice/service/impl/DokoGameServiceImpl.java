@@ -178,6 +178,11 @@ public class DokoGameServiceImpl implements DokoGameService {
                 response.getInfos().add("Spiel erfolgreich geprüft.");
             }
 
+            for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+                sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
+                        - dokoGame.getSeatScores().get(sp.getSeat()).getScore());
+            }
+
             // Update fields on dokoGame based on request
             setValuesFromRequest(dokoGame, request);
 

@@ -22,4 +22,9 @@ public class DokoPlayerServiceImpl implements DokoPlayerService {
     public List<DokoPlayer> findAll() {
         return dokoPlayerRepository.findAll();
     }
+
+    @Override
+    public DokoPlayer getByKindeId(String id) {
+        return dokoPlayerRepository.findByKindeId(id);
+    }
 }

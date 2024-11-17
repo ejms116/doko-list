@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DokoPlayerRepository extends JpaRepository<DokoPlayer,Long> {
+    DokoPlayer findByKindeId(String kindeId);
 }
