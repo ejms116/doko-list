@@ -21,9 +21,6 @@ public class DokoPlayer {
 
     private String name;
 
-    @Column(nullable = false)
-    private String kindeId;
-
     @OneToMany(mappedBy = "founder")
     @JsonIgnore
     private Set<DokoGroup> foundedGroups;
