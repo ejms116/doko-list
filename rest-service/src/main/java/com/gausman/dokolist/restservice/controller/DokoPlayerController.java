@@ -1,6 +1,6 @@
 package com.gausman.dokolist.restservice.controller;
 
-import com.gausman.dokolist.restservice.model.DokoPlayer;
+import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 import com.gausman.dokolist.restservice.service.DokoPlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,5 +21,10 @@ public class DokoPlayerController {
     @GetMapping("/all")
     public List<DokoPlayer> findAll(){
         return dokoPlayerService.findAll();
+    }
+
+    @GetMapping("/kinde/{kindeId}")
+    public DokoPlayer getByKindeId(@PathVariable String kindeId){
+        return dokoPlayerService.getByKindeId(kindeId);
     }
 }

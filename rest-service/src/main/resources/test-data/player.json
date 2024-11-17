@@ -1,0 +1,25 @@
+{
+  "players": [
+    {
+      "name":"Yannick",
+      "email":"yannick@mail.com"
+    },
+    {
+      "name":"Daniel",
+      "email":"daniel@mail.com"
+    },
+    {
+      "name":"Hendrik",
+      "email":"hendrik@mail.com"
+    },
+    {
+      "name":"Matze",
+      "email":"matze@mail.com"
+    },
+    {
+      "name":"Erik",
+      "email":"erik@mail.com"
+    }
+  ]
+}
+

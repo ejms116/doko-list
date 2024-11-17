@@ -23,5 +23,22 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
+
+  doko-app:
+    build:
+      context: ./doko-app
+      dockerfile: Dockerfile
+    volumes:
+      - /app/node_modules
+    depends_on:
+      - rest-service
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: true
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api
+
+
 volumes:
   database:
