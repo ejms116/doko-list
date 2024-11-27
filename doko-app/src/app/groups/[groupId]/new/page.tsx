@@ -94,6 +94,11 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
             return;
         }
 
+        if (selectedPlayers.length > 5) {
+            setError("Bitte höchstens 5 Spieler auswählen.");
+            return;
+        }
+
         const playerIds = selectedPlayers.map(player => player.id);
         const requestBody = {
             groupId: groupData?.id, // Use the group ID from groupData
@@ -155,19 +160,40 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
             {error && <p className="text-red-500 mt-4">{error}</p>}
             {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
 
+            {/* Warning Info Box (added here) */}
+            <div className="mt-4 p-5 bg-yellow-600 text-gray-200 rounded-lg shadow-lg">
+                {/* First Line: Icon and Bold Text */}
+                <p className="text-2xl font-bold text-gray-900 flex items-center">
+                    ⚠️ <span className="ml-2">Hinweise:</span>
+                </p>
+
+                {/* Main Content */}
+                <p className="text-xl font-medium text-gray-800 mt-3 leading-relaxed">
+                    Auf der rechten Seite sind alle Spieler der Gruppe. Die am Abend teilnehmenden Spieler bitte markieren und "Markierte Spieler hinzufügen" klicken.<br />
+                    Bei den aktiven Spielern unbedingt mittels Drag&Drop die korrekte Sitzreihenfolge angeben, der oberste Spieler teilt zuerst aus.<br />
+                    <span className="font-bold">Die Reihenfolge ist später nicht mehr änderbar!</span><br />
+                    Es können nur genau 4 oder 5 Spieler an einem Abend teilnehmen.
+                </p>
+            </div>
+
+
             {/* Player Selection Section */}
             <div className="flex justify-between space-x-4 mt-6">
                 <div className="flex-1 bg-gray-800 rounded-lg p-4 shadow-lg">
-                    <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
-                        onClick={() => moveCheckedPlayers(selectedPlayers, setSelectedPlayers, allPlayers, setAllPlayers)}>
+                    <button
+                        className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
+                        onClick={() => moveCheckedPlayers(selectedPlayers, setSelectedPlayers, allPlayers, setAllPlayers)}
+                    >
                         Markierte Spieler entfernen
                     </button>
                     <PlayerSelection title="Aktive Spieler" players={selectedPlayers} setPlayers={setSelectedPlayers} />
                 </div>
 
                 <div className="flex-1 bg-gray-800 rounded-lg p-4 shadow-lg">
-                    <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
-                        onClick={() => moveCheckedPlayers(allPlayers, setAllPlayers, selectedPlayers, setSelectedPlayers)}>
+                    <button
+                        className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mb-4"
+                        onClick={() => moveCheckedPlayers(allPlayers, setAllPlayers, selectedPlayers, setSelectedPlayers)}
+                    >
                         Markierte Spieler hinzufügen
                     </button>
                     <PlayerSelection title="Alle Spieler der Gruppe" players={allPlayers} setPlayers={setAllPlayers} />
@@ -175,6 +201,7 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
             </div>
         </div>
     );
+
 };
 
 export default NewSessionPage;

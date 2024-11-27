@@ -179,23 +179,29 @@ public class DokoGameServiceImpl implements DokoGameService {
 
 
 
+            Map<Integer,DokoGameSeat> seatMapCopy = new HashMap<>();
 
-
-            // Only commit if writeToDb is true
             if (request.isWriteToDb() && status != null) {
-                // update summed scores in session
-                for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
-                    sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
-                            - dokoGame.getSeatScores().get(sp.getSeat()).getScore());
-                }
+                dokoGame.getSeatScores().forEach((key, seat) -> {
+                    seatMapCopy.put(key, new DokoGameSeat(seat.getScore(), seat.getParty()));
+                });
             }
+
 
             // Update fields on dokoGame based on request
             setValuesFromRequest(dokoGame, request);
 
             calculateWinnerAndScores(dokoGame);
 
+            // Only commit if writeToDb is true
             if (request.isWriteToDb() && status != null) {
+                // update summed scores in session
+                for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+                    sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
+                            - seatMapCopy.get(sp.getSeat()).getScore());
+
+                }
+
                 dokoSessionRepository.save(dokoSession);
                 dokoGameRepository.save(dokoGame);
                 transactionManager.commit(status);
