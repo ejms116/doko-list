@@ -1,5 +1,8 @@
 package com.gausman.dokolist.restservice.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,19 +15,15 @@ import java.util.Set;
 @Entity
 @Setter
 @Getter
+//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class DokoGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonView(Views.Public.class)
     private Long id;
 
+    @JsonView(Views.Public.class)
     private String name;
-
-    @ManyToOne
-    @JoinColumn(name = "founder_id")
-    private DokoPlayer founder;
-
-    @CreationTimestamp
-    private Instant founded;
 
     @ManyToMany
     @JoinTable(
@@ -33,11 +32,27 @@ public class DokoGroup {
             inverseJoinColumns = @JoinColumn(name = "player_id")  // Foreign key for Player
     )
     @OrderBy("id ASC")
+    @JsonView(Views.Public.class)
     private Set<DokoPlayer> players = new HashSet<>();
 
     public void addPlayer(DokoPlayer dokoPlayer){
         players.add(dokoPlayer);
     }
 
+    @ManyToOne
+    @JoinColumn(name = "founder_id")
+    @JsonView(Views.Public.class)
+    private DokoPlayer founder;
+
+    @CreationTimestamp
+    @JsonView(Views.Public.class)
+    private Instant founded;
+
+    @JsonView(Views.Public.class)
+    private int sessionCount = 0;
+
+    public void addSession(DokoSession session){
+        sessionCount++;
+    }
 
 }

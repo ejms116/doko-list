@@ -1,6 +1,8 @@
 package com.gausman.dokolist.restservice.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,5 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthenticationResponse {
-    private String token;
+    @JsonProperty("access_token")
+    private String accessToken;
+    @JsonProperty("refresh_token")
+    private String refreshToken;
+    private String message;
+    private DokoPlayer dokoPlayer;
 }

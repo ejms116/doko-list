@@ -5,5 +5,6 @@ export interface Group {
     name: string;
     founder: Player;
     founded: Date;
+    sessionCount: number;
     players: Player[];
 }

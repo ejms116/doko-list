@@ -5,7 +5,7 @@ export interface GroupRowProps {
     name: string;
     member: string;
     founded: Date;
-    session_count: number;
+    sessionCount: number;
   }
 
   
@@ -23,7 +23,7 @@ export interface GroupRowProps {
           </td>
           <td className="py-3 px-6 text-left">{data.member}</td>
           <td className="py-3 px-6 text-left whitespace-nowrap">{data.founded.toLocaleString()}</td>
-          <td className="py-3 px-6 text-left">{data.session_count}</td>
+          <td className="py-3 px-6 text-left">{data.sessionCount}</td>
           <td className="py-3 px-6 text-left">
             <Link href={`groups/${data.id}`}>
             <button className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700">
