@@ -78,16 +78,11 @@ public class DokoGameServiceImpl implements DokoGameService {
 
             dokoSession.updateNextDealer();
 
-            for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
-                sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
-            }
-
             setValuesFromRequest(dokoGame, request);
-
             dokoGame.setDokoSession(dokoSession);
-
             dokoGame.setBock(dokoSession.useBock());
             dokoGame.setMoreBock(request.isMoreBock());
+
             if (request.isMoreBock()) {
                 dokoSession.addBock();
             }
@@ -96,6 +91,10 @@ public class DokoGameServiceImpl implements DokoGameService {
 
             // Only commit if writeToDb is true
             if (request.isWriteToDb() && status != null) {
+                for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+                    sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
+                }
+
                 dokoSessionRepository.save(dokoSession);
                 dokoGameRepository.save(dokoGame);
                 transactionManager.commit(status);
@@ -151,7 +150,7 @@ public class DokoGameServiceImpl implements DokoGameService {
             dokoGame.setBock(request.isBock());
 
             // Herz rum
-              boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
+            boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
             boolean changeNoHerzToHerz = !dokoGame.isMoreBock() && request.isMoreBock();
 
             if (changeHerzToNoHerz){
@@ -178,9 +177,17 @@ public class DokoGameServiceImpl implements DokoGameService {
                 response.getInfos().add("Spiel erfolgreich geprüft.");
             }
 
-            for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
-                sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
-                        - dokoGame.getSeatScores().get(sp.getSeat()).getScore());
+
+
+
+
+            // Only commit if writeToDb is true
+            if (request.isWriteToDb() && status != null) {
+                // update summed scores in session
+                for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+                    sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
+                            - dokoGame.getSeatScores().get(sp.getSeat()).getScore());
+                }
             }
 
             // Update fields on dokoGame based on request
@@ -188,11 +195,12 @@ public class DokoGameServiceImpl implements DokoGameService {
 
             calculateWinnerAndScores(dokoGame);
 
-            // Only commit if writeToDb is true
             if (request.isWriteToDb() && status != null) {
                 dokoSessionRepository.save(dokoSession);
                 dokoGameRepository.save(dokoGame);
                 transactionManager.commit(status);
+
+
             }
 
         } catch (Exception ex) {
@@ -279,11 +287,11 @@ public class DokoGameServiceImpl implements DokoGameService {
         }
 
         if (!request.isAnsageRe() && request.isAnsageReVorab()){
-            response.getErrors().add("Bei Re-Vorab muss auch noramle Re-Ansage erfolgen.");
+            response.getErrors().add("Bei Re-Vorab muss auch normale Re-Ansage erfolgen.");
         }
 
         if (!request.isAnsageContra() && request.isAnsageContraVorab()){
-            response.getErrors().add("Bei Contra-Vorab muss auch noramle Contra-Ansage erfolgen.");
+            response.getErrors().add("Bei Contra-Vorab muss auch normale Contra-Ansage erfolgen.");
         }
 
 

@@ -9,6 +9,5 @@ import java.util.List;
 @Setter
 public class CreateGroupRequest {
     private String name;
-    private Long founderId;
     private List<Long> playerIds;
 }

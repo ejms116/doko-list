@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 import Link from "next/link";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+
 import SessionRow from "./session-row";
 import { SessionRowProps } from "./session-row";
 import GreenRedCellSum from "../../ui/green-red-cell-sum";
@@ -15,7 +15,9 @@ import { SessionPlayer } from "../../models/composite/SessionPlayer";
 import Modal from "../../ui/modal";
 import Spinner from "@/app/ui/Spinner";
 
-
+import useApiClient from "@/app/auth/useApiClient";
+import { AuthContext } from "@/app/auth/AuthContext";
+import { useContext } from "react";
 const apiBaseUrl =
     typeof window === "undefined"  // Check if running on the server
         ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
@@ -25,9 +27,9 @@ const GroupPage = ({ params }: {
     params: { groupId: string }
 }) => {
 
-    const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
-    console.log(user)
-    console.log(typeof(user?.id))
+    const { authToken } = useContext(AuthContext);
+
+    const apiClient = useApiClient();
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<Error>();
@@ -38,26 +40,25 @@ const GroupPage = ({ params }: {
     const [summedScores, setSummedScores] = useState<number[]>();
 
     const fetchData = async () => {
+        if (!authToken) {
+            return
+        }
         try {
             setLoading(true);
 
-            const [groupRes, sessionRes] = await Promise.all([
-                fetch(`${apiBaseUrl}/groups/${params.groupId}`, { cache: 'no-store' }),
-                fetch(`${apiBaseUrl}/groups/${params.groupId}/sessions`, { cache: 'no-store' })
-            ]);
+            const groupRequest = apiClient.get(`/groups/${params.groupId}`);
+            const sessionsRequest = apiClient.get(`/groups/${params.groupId}/sessions`);
 
-            if (!groupRes.ok || !sessionRes.ok) {
-                throw new Error('Failed to fetch data');
-            }
-
-            const [groupResJson, sessionResJson] = await Promise.all([
-                groupRes.json(),
-                sessionRes.json()
-            ])
-
-            setGroupData(groupResJson);
-            setSessionData(sessionResJson);
-
+            Promise.all([groupRequest, sessionsRequest])
+                .then(([groupResponse, sessionsResponse]) => {
+                    console.log(groupResponse);
+                    console.log(sessionsResponse);
+                    setGroupData(groupResponse.data);
+                    setSessionData(sessionsResponse.data);
+                })
+                .catch((error) => {
+                    //throw new Error('Failed to fetch data');
+                })
 
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -71,105 +72,82 @@ const GroupPage = ({ params }: {
 
     useEffect(() => {
         fetchData();
-    }, [params.groupId]);
+    }, [params.groupId, authToken]);
+
+    function makeSessionRowProps(sessionData: Session[], groupData: Group): SessionRowProps[] {
+        return sessionData.map((session: Session) => {
+            const playedDate = new Date(session.played);
+    
+            // Initialize scores array
+            let scores = new Array(groupData.players.length).fill(0);
+    
+            // Map session players to their scores
+            session.sessionPlayers.forEach((sp: SessionPlayer) => {
+                const playerIndex = groupData.players.findIndex(player => player.id === sp.id.playerId);
+                if (playerIndex !== -1) {
+                    scores[playerIndex] = sp.score;
+                }
+            });
+    
+            return {
+                id: session.id,
+                played: playedDate.toLocaleString('de-DE', { timeZone: 'CET' }),
+                scores: scores,
+                location: session.location,
+            };
+        });
+    }
+    
 
     useEffect(() => {
         if (sessionData && groupData) {
-            setSessionRowProps(sessionData.map((session: Session) => {
-                const playedDate = new Date(session.played);
+            const sProps = makeSessionRowProps(sessionData, groupData);
 
-                let scores = new Array(groupData.players.length).fill(0);
-
-                session.sessionPlayers.map((sp: SessionPlayer) => {
-                    scores[groupData.players.findIndex(player => player.id === sp.id.playerId)] = sp.score;
-                })
-
-                return {
-                    id: session.id,
-                    played: playedDate.toLocaleString('de-De', { timeZone: 'CET' }),
-                    scores: scores,
-                    location: session.location,
-                };
-            }));
+            setSessionRowProps(sProps);
 
             let summedScores = new Array(groupData.players.length).fill(0);
 
-            if (sessionRowProps) {
-                sessionRowProps.forEach((sessionRow: SessionRowProps) => {
-                    sessionRow.scores.forEach((score, index) => {
-                        summedScores[index] += score;
-                    });
-                })
-
-            }
+            
+            sProps.forEach((sessionRow: SessionRowProps) => {
+                sessionRow.scores.forEach((score, index) => {
+                    summedScores[index] += score;
+                });
+            })
+                
+            
             setSummedScores(summedScores);
         }
 
-
+        
     }, [groupData, sessionData])
 
 
-    // const groupRes = await fetch(`${apiBaseUrl}/groups/${params.groupId}`, {
-    //     cache: 'no-store',
-    // });
-
-    // const rawGroupData = await groupRes.json();
-
-    // const groupData: Group = {
-    //     ...rawGroupData,
-    //     founded: new Date(rawGroupData.founded)
-
-    // };
 
 
-    // const sessions_res = await fetch(`${apiBaseUrl}/groups/${params.groupId}/sessions`, {
-    //     cache: 'no-store',
-    // });
-    // const sessions: Session[] = await sessions_res.json();
-
-
-    // const sessionRowProps: SessionRowProps[] = sessions.map((session: Session) => {
-    //     const playedDate = new Date(session.played);
-
-    //     let scores = new Array(groupData.players.length).fill(0);
-
-    //     session.sessionPlayers.map((sp: SessionPlayer) => {
-    //         scores[groupData.players.findIndex(player => player.id === sp.id.playerId)] = sp.score;
-    //     })
-
-    //     return {
-    //         id: session.id,
-    //         played: playedDate.toLocaleString('de-De', { timeZone: 'CET' }),
-    //         scores: scores,
-    //         location: session.location,
-    //     };
-    // });
-
-    // let summedScores = new Array(groupData.players.length).fill(0);
-
-    // sessionRowProps.forEach((sessionRow: SessionRowProps) => {
-    //     sessionRow.scores.forEach((score, index) => {
-    //         summedScores[index] += score;
-    //     });
-    // });
-
-    // const formattedFounded = groupData.founded.toLocaleString();
-
-
-    if (loading) return <Spinner text="Lade Daten zu Gruppe..." />
+    if (loading || !groupData || !sessionRowProps || !summedScores) return <Spinner text="Lade Daten zu Gruppe..." />
     if (error || !groupData || !sessionRowProps || !summedScores) return <p>Error</p>
 
     return (
         <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
             <div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
                 <h2 className="text-2xl font-semibold text-gray-300">{groupData.name}</h2>
-                {isAuthenticated && (
-                    <Link href={`${params.groupId}/new`}>
-                        <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                            Neuen Abend erstellen
-                        </button>
-                    </Link>
+                {/* TODO: show button only if player is part of the group */}
+                {true && (
+                    <>
+                        <Link href={`detail/${params.groupId}`}>
+                            <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                                Gruppen Details anzeigen
+                            </button>
+                        </Link>
+                        <Link href={`${params.groupId}/new`}>
+                            <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                                Neuen Abend erstellen
+                            </button>
+                        </Link>
+
+                    </>
                 )}
+
             </div>
 
             <div className="overflow-x-auto">

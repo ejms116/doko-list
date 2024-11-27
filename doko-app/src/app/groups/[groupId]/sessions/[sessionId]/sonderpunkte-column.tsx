@@ -51,6 +51,10 @@ const SonderpunkteColumn: React.FC<SonderpunkteColumnProps> = (
   }
 
   const updatePartyIndex = (currentParty: Party, otherParty: Party, setState: React.Dispatch<React.SetStateAction<Party[]>>, index: number) => {
+    console.log("current_party: " + currentParty)
+    console.log("other_party: " + otherParty)
+    console.log("index: " + index)
+    console.log(charlieGefangen)
     if (currentParty === otherParty) {
       setState((prevArray) =>
         prevArray.map((party, i) => (i === index ? PARTY.Inaktiv : party))

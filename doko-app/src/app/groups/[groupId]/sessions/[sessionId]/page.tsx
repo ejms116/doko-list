@@ -17,6 +17,8 @@ import { AnsagenColumnProps } from "./ansagen-column";
 import { PlayerColumnProps } from "./player-column";
 import { PlayerData } from "./player-column";
 
+import Spinner from "@/app/ui/Spinner";
+
 import { PARTY, Party } from "../../../../models/general/Constants";
 
 import { Session } from "../../../../models/general/Session";
@@ -34,6 +36,10 @@ import { SopoType, SOPO_TYPE } from "../../../../models/general/Constants";
 
 import Link from "next/link";
 
+import useApiClient from "@/app/auth/useApiClient";
+import { AuthContext } from "@/app/auth/AuthContext";
+import { useContext } from "react";
+
 const apiBaseUrl =
 	typeof window === "undefined"  // Check if running on the server
 		? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
@@ -45,6 +51,10 @@ const SessionPage = ({ params }: {
 		sessionId: string
 	}
 }) => {
+
+	const { authToken } = useContext(AuthContext);
+	const apiClient = useApiClient();
+
 	const [gameDetailOpen, setGameDetailOpen] = useState(false)
 	const [createNewGame, setCreateNewGame] = useState<boolean>(false);
 
@@ -118,30 +128,28 @@ const SessionPage = ({ params }: {
 	}, [modalGameType])
 
 	const fetchData = async () => {
+		if (!authToken) {
+			return
+		  }
 		try {
 			setLoading(true);
 
-			// Run both fetch requests in parallel
-			console.log(`${apiBaseUrl}/groups/sessions/${params.sessionId}`);
-			console.log(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`);
-			const [sessionRes, gameRes] = await Promise.all([
-				fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}`, { cache: 'no-store' }),
-				fetch(`${apiBaseUrl}/groups/sessions/${params.sessionId}/games`, { cache: 'no-store' })
-			]);
+			const sessionRequest = apiClient.get(`/groups/sessions/${params.sessionId}`);
+            const gamesRequest = apiClient.get(`/groups/sessions/${params.sessionId}/games`);
+
+            Promise.all([sessionRequest, gamesRequest])
+                .then(([sessionResponse, gamesResponse]) => {
+					console.log(sessionResponse.data)
+					//console.log(gamesResponse.data)
+					setSessionData(sessionResponse.data); 
+                    setGameData(gamesResponse.data);
+                                       
+                })
+                .catch((error) => {
+                    //throw new Error('Failed to fetch data');
+                })
 
 
-			if (!sessionRes.ok || !gameRes.ok) {
-				throw new Error('Failed to fetch data');
-			}
-
-			const [sessionData, gameData] = await Promise.all([
-				sessionRes.json(),
-				gameRes.json()
-			]);
-
-			setSessionData(sessionData);
-			setGameData(gameData);
-			console.log(gameData);
 		} catch (err: unknown) {
 			if (err instanceof Error) {
 				setError(err);
@@ -154,7 +162,7 @@ const SessionPage = ({ params }: {
 
 	useEffect(() => {
 		fetchData();
-	}, [params.sessionId]);
+	}, [params.sessionId, authToken]);
 
 
 	useEffect(() => {
@@ -322,7 +330,8 @@ const SessionPage = ({ params }: {
 		setModalSopoFuchsAmEnd(PARTY.Inaktiv);
 		setModalSopoDulleGefangen(PARTY.Inaktiv);
 		setModalSopoCharlie(PARTY.Inaktiv);
-		setModalSopoCharlieGefangen([PARTY.Inaktiv, PARTY.Inaktiv]);
+		//setModalSopoCharlieGefangen([PARTY.Inaktiv, PARTY.Inaktiv]);
+
 
 		let reDoppolkopfCount = 0;
 		let contraDoppolkopfCount = 0;
@@ -363,8 +372,9 @@ const SessionPage = ({ params }: {
 					setModalSopoCharlie(sopo.dokoParty);
 					break;
 				case SOPO_TYPE.CHARLIE_GEFANGEN:
-					sopoCharlieGefangenTemp.push(sopo.dokoParty);
-					// setModalSopoCharlieGefangen(sopo.dokoParty);
+					if (sopo.dokoParty !== undefined){
+						sopoCharlieGefangenTemp.push(sopo.dokoParty);
+					}
 
 					break;
 				default:
@@ -378,6 +388,12 @@ const SessionPage = ({ params }: {
 		setModalSopoReFuchsGefangen(createBooleanArray(reFuchsCount, 2));
 		setModalSopoContraFuchsGefangen(createBooleanArray(contraFuchsCount, 2));
 
+		// Hier werden zwei Inaktiv hinzugefügt und dann alle bis auf die ersten beiden Elemente abgeschnitten
+		// wir bekommen also immer genau zwei Werte zurück
+		sopoCharlieGefangenTemp.push(PARTY.Inaktiv);
+		sopoCharlieGefangenTemp.push(PARTY.Inaktiv);
+
+		sopoCharlieGefangenTemp.splice(2, sopoCharlieGefangenTemp.length-2,)
 		setModalSopoCharlieGefangen(sopoCharlieGefangenTemp);
 
 		setModalPlayers((prevPlayers) => {
@@ -411,7 +427,12 @@ const SessionPage = ({ params }: {
 		setModalAnsageContraVorab(editGame.ansageContraVorab);
 
 		setModalWeitereAnsagenParty(editGame.weitereAnsagenParty);
-		setModalWeitereAnsagenPartyVorab(editGame.weitereAnsagenParty);
+		if (editGame.ansageVorab < 120){
+			setModalWeitereAnsagenPartyVorab(editGame.weitereAnsagenParty);
+		} else {
+			setModalWeitereAnsagenPartyVorab(PARTY.Inaktiv);
+		}
+		
 
 		setModalAnsage(editGame.ansage);
 		setModalAnsageVorab(editGame.ansageVorab);
@@ -572,7 +593,7 @@ const SessionPage = ({ params }: {
 		// 	})
 		// }
 
-		modalSopoCharlieGefangen.filter(val => val != PARTY.Inaktiv).forEach((party: Party) => {
+		modalSopoCharlieGefangen.filter(val => val === PARTY.Re || val === PARTY.Contra).forEach((party: Party) => {
 			sonderpunkte.push({
 				dokoParty: party,
 				type: SOPO_TYPE.CHARLIE_GEFANGEN,
@@ -605,9 +626,6 @@ const SessionPage = ({ params }: {
 			sonderpunkte: sonderpunkte,
 		}
 
-		console.log("request")
-		console.log(requestBody);
-
 		let url = '';
 
 		if (modalGameId !== null) {
@@ -619,56 +637,47 @@ const SessionPage = ({ params }: {
 		console.log(`url: ${url}`);
 
 		try {
-			const response = await fetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(requestBody),
-			});
+			// const response = await fetch(url, {
+			// 	method: 'POST',
+			// 	headers: {
+			// 		'Content-Type': 'application/json',
+			// 	},
+			// 	body: JSON.stringify(requestBody),
+			// });
 
-			// if (!response.ok) {
-			// 	throw new Error('Failed to create game');
-			// }
+			const gameRequest = apiClient.post(url, requestBody);
 
-			const result: GameResponse = await response.json();
-			console.log(result)
+			Promise.all([gameRequest])
+				.then(([gameResponse]) => {
+					console.log(gameResponse)
+					console.log(gameResponse.data)
+					setGameResponse(gameResponse.data)
 
-			// put result in state
-			setGameResponse(result);
+					setModalPlayers((prevPlayers) => {
+						return prevPlayers.map((player, index) => {
+							const seatScore = gameResponse.data.dokoGame.seatScores[index];
+							if (seatScore) {
+								return {
+									...player,
+									score: seatScore.score,
+								};
+							}
+							return player;
+						})
+		
+					})
 
-
-			if (!response.ok) {
-				throw new Error('Failed to create game');
-			}
-
-			setModalPlayers((prevPlayers) => {
-				return prevPlayers.map((player, index) => {
-					const seatScore = result.dokoGame.seatScores[index];
-					if (seatScore) {
-						return {
-							...player,
-							score: seatScore.score,
-						};
+					setError("");
+					
+					if (actuallyPost) {
+						setGameDetailOpen(false)
+						setGameResponse(null);
+						fetchData();
 					}
-					return player;
 				})
-
-			})
-
-
-			setError("");
-			//setSuccessMessage("Spiel wurde erfolgreich angelegt!");
-
-			const newGameId = result.dokoGame.id;
-			//router.push(`/groups/${groupData?.id}/sessions/${newSessionId}`);
-			//setGameDetailOpen(false)
-			// window.location.reload()
-			if (actuallyPost) {
-				setGameDetailOpen(false)
-				setGameResponse(null);
-				await fetchData();
-			}
+				.catch((error) => {
+					setGameResponse(error.response.data)
+				})
 
 		} catch (error) {
 			console.log(error);
@@ -686,11 +695,7 @@ const SessionPage = ({ params }: {
 		setGameResponse(null);
 	}
 
-	if (loading) return <p>Loading...</p>;
-	if (!sessionData) return <p>Loading session data...</p>;
-	if (!gameData) return <p>Loading game data...</p>;
-	if (!modalPlayers) return <p>Loading session players...</p>;
-	//if (error) return <p>Error</p>;
+	if (loading || !sessionData || !gameData || !modalPlayers) return <Spinner text="Lade Daten zum Abend..." />
 
 	const playedDate: Date = new Date(sessionData.played);
 

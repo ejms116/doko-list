@@ -2,15 +2,32 @@
 
 import Link from 'next/link';
 
-import { RegisterLink, LoginLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useState, useEffect } from 'react';
+
+import { AuthContext } from '../auth/AuthContext';
+import { useContext } from 'react';
+
 import Spinner from '../ui/Spinner';
 
 import Image from 'next/image';
 
 const Navbar = () => {
 
-  const isAuthenticated = false;
   const isLoading = false;
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const { authToken, player, handleLogout } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (player != null) {
+      setIsAuthenticated(true)
+      console.log("useEffect: true")
+    } else {
+      setIsAuthenticated(false)
+      console.log("useEffect: false")
+    }
+  }, [player])
 
   return (
     <div className="bg-gray-800 text-gray-200 shadow-lg p-4">
@@ -29,6 +46,7 @@ const Navbar = () => {
           <Link href="/players" passHref>
             <button className="text-gray-200 hover:text-white">Spieler</button>
           </Link>
+          <span>{authToken?.substring(0, 10)}</span>
         </div>
 
 
@@ -52,54 +70,39 @@ const Navbar = () => {
         <div className="ml-auto flex items-center space-x-4">
           {!isAuthenticated && (
             <>
-              <LoginLink>
+              <Link href="/login" passHref>
                 <button className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300">
                   Login
                 </button>
-              </LoginLink>
-              <RegisterLink>
+              </Link>
+              <Link href="/register" passHref>
                 <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
                   Registrieren
                 </button>
-              </RegisterLink>
+              </Link>
             </>
           )}
           {isLoading && <div className='animate-spin rounded-full h-7 w-7 border-b-2 border-white/50 mx-auto my-2'></div>}
 
-
-
-
-
-          {/* {user?.email && (
-              <p className='text-center text-xs mb-3'>Eingeloggt als {user?.email}</p>
-            )} */}
-
           {isAuthenticated && (
 
-              <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                Logout
+            <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={handleLogout}>
+              Logout
+            </button>
+          )}
+
+          {player && (
+            <Link href="/dashboard">
+              <div className="ml-auto flex items-center space-x-4">
+              <button className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300">
+                Mein Dashboard
               </button>
-          )}
-
-          {/* {user?.picture && (
-            <Link href="/dashboard">
-              <Image
-                src={user?.picture}
-                alt="Profile picture"
-                width={40}
-                height={40}
-                className="rounded-full mx-auto my-auto"
-              />
-            </Link>
-          )}
-
-          {user && !user.picture && (
-            <Link href="/dashboard">
-              <div className='h-7 w-7 rounded-full mx-auto my-2 bg-zinc-800 text-xs flex justify-center items-center'>
-                {user?.given_name?.[0]}
+              <div className='h-8 w-8 rounded-full mx-auto  my-0 bg-green-500 text-base flex justify-center items-center'>
+                {player?.name?.[0]}
+              </div>
               </div>
             </Link>
-          )} */}
+          )}
         </div>
 
       </div>

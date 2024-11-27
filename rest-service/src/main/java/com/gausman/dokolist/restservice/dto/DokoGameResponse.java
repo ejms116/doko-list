@@ -1,6 +1,7 @@
 package com.gausman.dokolist.restservice.dto;
 
 import com.gausman.dokolist.restservice.model.entities.DokoGame;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
