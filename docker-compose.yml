@@ -4,7 +4,7 @@ services:
     volumes:
       - database:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -15,7 +15,7 @@ services:
       context: ./rest-service
       dockerfile: Dockerfile
     ports:
-      - "8088:8088"
+      - "127.0.0.1:8088:8088"
     depends_on:
       - postgres
     environment:
