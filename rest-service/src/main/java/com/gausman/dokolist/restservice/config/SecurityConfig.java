@@ -65,7 +65,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000", "http://doko-app:3000", "https://doko.machill-it.de")  // Allow requests from your frontend
+                        .allowedOrigins("http://localhost:3000", "http://doko-app:3000", "https://doko.machill-it.de", "http://192.168.178.115:3000/")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

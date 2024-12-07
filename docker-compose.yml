@@ -19,7 +19,7 @@ services:
     depends_on:
       - postgres
     environment:
-      JWT_SECRET: ${JWT_SECRET-secret_dev}
+      JWT_SECRET: ${JWT_SECRET}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dokolist
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
