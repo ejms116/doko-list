@@ -16,11 +16,6 @@ import Spinner from "../ui/Spinner";
 import GroupRow from '../groups/group-row';
 import { GroupRowProps } from '../groups/group-row';
 
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
-
 const Dashboard = () => {
     const [loading, setLoading] = useState(true);
 

@@ -22,11 +22,6 @@ export type PlayerWithStatus = {
     removeable: boolean;
 };
 
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
-
 const GroupDetailPage = ({ params }: {
     params: { groupId: string }
 }) => {
@@ -162,7 +157,7 @@ const GroupDetailPage = ({ params }: {
         if (newGroup) {
 
             // const gameRequest = apiClient.post(`${apiBaseUrl}/groups/${modalGameId}/create`, requestBody);
-            const groupRequest = apiClient.post(`${apiBaseUrl}/groups/create`, requestBody);
+            const groupRequest = apiClient.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/create`, requestBody);
 
             Promise.all([groupRequest])
                 .then(([groupResponse]) => {
@@ -183,7 +178,7 @@ const GroupDetailPage = ({ params }: {
                 })
 
         } else {
-            const groupRequest = apiClient.post(`${apiBaseUrl}/groups/${groupId}/change`, requestBody);
+            const groupRequest = apiClient.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/${groupId}/change`, requestBody);
 
             Promise.all([groupRequest])
                 .then(([groupResponse]) => {

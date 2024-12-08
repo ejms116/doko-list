@@ -2,16 +2,11 @@ import axios from 'axios';
 import { useContext } from 'react';
 import { AuthContext } from '../auth/AuthContext';
 
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
-
 const useApiClient = () => {
   const { authToken } = useContext(AuthContext);
 
   const apiClient = axios.create({
-    baseURL: apiBaseUrl,
+    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   });
 
   // Add interceptors to attach headers

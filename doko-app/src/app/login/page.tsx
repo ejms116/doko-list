@@ -6,14 +6,6 @@ import React, { FormEvent, useState, useContext } from "react";
 
 import { AuthContext } from '../auth/AuthContext';
 
-
-
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
-
-// const LoginPage = async () => {
 const LoginPage: React.FC = () => {
     const router = useRouter();
     const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);

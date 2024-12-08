@@ -40,11 +40,6 @@ import useApiClient from "@/app/auth/useApiClient";
 import { AuthContext } from "@/app/auth/AuthContext";
 import { useContext } from "react";
 
-const apiBaseUrl =
-	typeof window === "undefined"  // Check if running on the server
-		? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-		: process.env.NEXT_PUBLIC_API_BASE_URL;
-
 const SessionPage = ({ params }: {
 	params: {
 		groupId: string,
@@ -629,9 +624,9 @@ const SessionPage = ({ params }: {
 		let url = '';
 
 		if (modalGameId !== null) {
-			url = `${apiBaseUrl}/groups/sessions/games/${modalGameId}/update`;
+			url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/sessions/games/${modalGameId}/update`;
 		} else {
-			url = `${apiBaseUrl}/groups/sessions/games/create`;
+			url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/sessions/games/create`;
 		}
 
 		console.log(`url: ${url}`);

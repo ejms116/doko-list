@@ -18,10 +18,6 @@ import Spinner from "@/app/ui/Spinner";
 import useApiClient from "@/app/auth/useApiClient";
 import { AuthContext } from "@/app/auth/AuthContext";
 import { useContext } from "react";
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const GroupPage = ({ params }: {
     params: { groupId: string }

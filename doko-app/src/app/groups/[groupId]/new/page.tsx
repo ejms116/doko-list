@@ -10,11 +10,6 @@ import { Player } from "../../../models/general/Player";
 
 import useApiClient from '@/app/auth/useApiClient';
 
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
-
 export type PlayerSelectionProps = {
     id: number;
     player: Player;
@@ -107,7 +102,7 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
         };
 
         try {
-            const sessionRequest = apiClient.post(`${apiBaseUrl}/groups/sessions/create`, requestBody);
+            const sessionRequest = apiClient.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/groups/sessions/create`, requestBody);
 
             Promise.all([sessionRequest])
                 .then(([sessionResponse]) => {

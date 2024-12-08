@@ -1,20 +1,15 @@
 import axios from 'axios';
 
-const apiBaseUrl =
-    typeof window === "undefined"  // Check if running on the server
-        ? process.env.INTERNAL_API_BASE_URL  // Use Docker internal URL for server components
-        : process.env.NEXT_PUBLIC_API_BASE_URL;
-
 // TODO DELETE
 // refreshAuthToken wird wohl noch benutzt
 
 export const login = async (email: string, password: string) => {
-  const response = await axios.post(`${apiBaseUrl}/auth/authenticate`, { email, password });
+  const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/authenticate`, { email, password });
   return response; // Contains auth_token and refresh_token
 };
 
 export const refreshAuthToken = async (refreshToken: string) => {
-  const response = await axios.post(`${apiBaseUrl}/auth/refresh`, { refreshToken });
+  const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh`, { refreshToken });
   return response.data.access_token;
 };
 

@@ -34,19 +34,14 @@ interface AuthProviderProps {
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const router = useRouter();
-  const apiBaseUrl =
-    typeof window === 'undefined'
-      ? process.env.INTERNAL_API_BASE_URL
-      : process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  const isClient = typeof window !== 'undefined';
 
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [loggedInPlayer, setLoggedInPlayer] = useState<any | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
   const handleRegister = async (name: string, email: string, password: string) => {
-    const request = axios.post(`${apiBaseUrl}/auth/register`, { name, email, password });
+    console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
+    const request = axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`, { name, email, password });
 
     request
       .then((response) => {
@@ -67,7 +62,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const handleLogin = async (email: string, password: string) => {
-    const request = axios.post(`${apiBaseUrl}/auth/authenticate`, { email, password });
+    const request = axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/authenticate`, { email, password });
 
     request
       .then((response) => {
