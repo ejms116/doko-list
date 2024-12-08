@@ -56,8 +56,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://doko-app:3000", "https://doko.machill-it.de", "http://192.168.178.115:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow all necessary HTTP methods
         configuration.setAllowCredentials(true); // Allow credentials
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept")); // Allow specific headers
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type")); // Expose headers if needed
+        configuration.setAllowedHeaders(Arrays.asList("Access-Control-Allow-Origin","Authorization", "Content-Type", "Accept")); // Allow specific headers
+        configuration.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin","Authorization", "Content-Type")); // Expose headers if needed
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
