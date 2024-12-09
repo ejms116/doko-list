@@ -54,7 +54,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://doko-app:3000", "https://doko.machill-it.de", "http://192.168.178.115:3000", "http://doko.superik.org"));
+        configuration.addAllowedOrigin("https://doko.superik.org");
+        configuration.addAllowedOrigin("https://192.168.178.115:3000");
+        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("http://doko-app:3000");
+        configuration.addAllowedOrigin("https://doko.machill-it.de");
+        configuration.addAllowedOrigin("http://192.168.178.115:3000");
+        configuration.addAllowedOrigin("http://doko.superik.org");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow all necessary HTTP methods
         configuration.setAllowCredentials(true); // Allow credentials
         configuration.setAllowedHeaders(Arrays.asList("Access-Control-Allow-Origin","Authorization", "Content-Type", "Accept")); // Allow specific headers
