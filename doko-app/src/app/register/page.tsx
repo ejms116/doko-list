@@ -43,7 +43,8 @@ const RegisterPage: React.FC = () => {
           setMessage({ type: "success", text: "Registierung erfolgreich!" });
           router.push(`/dashboard`);
         })
-        .catch(() => {
+        .catch((res: Error) => {
+          console.log(res.message)
           setMessage({ type: "error", text: "Registierung fehlgeschlagen." });
           console.log('Register Error error');
         });
