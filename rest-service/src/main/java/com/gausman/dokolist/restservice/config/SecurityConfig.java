@@ -9,6 +9,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -53,7 +54,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://doko-app:3000", "https://doko.machill-it.de", "http://192.168.178.115:3000"));
+        configuration.addAllowedOrigin("https://doko.superik.org");
+        configuration.addAllowedOrigin("https://192.168.178.115:3000");
+        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("http://doko-app:3000");
+        configuration.addAllowedOrigin("https://doko.machill-it.de");
+        configuration.addAllowedOrigin("http://192.168.178.115:3000");
+        configuration.addAllowedOrigin("http://doko.superik.org");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow all necessary HTTP methods
         configuration.setAllowCredentials(true); // Allow credentials
         configuration.setAllowedHeaders(Arrays.asList("Access-Control-Allow-Origin","Authorization", "Content-Type", "Accept")); // Allow specific headers
@@ -61,18 +68,21 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS configuration
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(new AntPathRequestMatcher("/**"))  // Disable CSRF only for all API endpoints
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/**"))
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(WHITE_LIST_URL)
                         .permitAll()
                         .anyRequest().authenticated()  // all other Endpoints are secured
