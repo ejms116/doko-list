@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Group } from "../../../models/general/Group";
 
@@ -26,6 +26,8 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+    const isRequesting = useRef(false);
+
     const moveCheckedPlayers = (
         source: PlayerSelectionProps[],
         setSource: React.Dispatch<React.SetStateAction<PlayerSelectionProps[]>>,
@@ -40,6 +42,8 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
     };
 
     const fetchData = async () => {
+
+
         try {
 
             const groupRequest = apiClient.get(`/groups/${params.groupId}`);
@@ -78,6 +82,8 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
     }, [params.groupId]);
 
     const createSession = async () => {
+        if (isRequesting.current) return;
+        isRequesting.current = true;
         // Validate location and selected players
         if (!location.trim()) {
             setError("Bitte Ort angeben.");
@@ -122,6 +128,10 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
             } else {
                 setError("An unknown error occurred");
             }
+        } finally {
+            setTimeout(() => {
+                isRequesting.current = false;
+            }, 500); // 500ms delay
         }
     };
 

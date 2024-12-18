@@ -46,25 +46,7 @@ const Navbar = () => {
           <Link href="/players" passHref>
             <button className="text-gray-200 hover:text-white">Spieler</button>
           </Link>
-          <span>{authToken?.substring(0, 10)}</span>
         </div>
-
-
-        {/* <div className="ml-auto flex items-center space-x-4">
-
-          <LoginLink>
-            <button className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300">
-              Login
-            </button>
-          </LoginLink>
-          <RegisterLink>
-            <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-              Registrieren
-            </button>
-          </RegisterLink>
-
-        </div> */}
-
 
         {/* <div className='mt-auto'> */}
         <div className="ml-auto flex items-center space-x-4">
@@ -94,9 +76,6 @@ const Navbar = () => {
           {player && (
             <Link href="/dashboard">
               <div className="ml-auto flex items-center space-x-4">
-              <button className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300">
-                Mein Dashboard
-              </button>
               <div className='h-8 w-8 rounded-full mx-auto  my-0 bg-green-500 text-base flex justify-center items-center'>
                 {player?.name?.[0]}
               </div>

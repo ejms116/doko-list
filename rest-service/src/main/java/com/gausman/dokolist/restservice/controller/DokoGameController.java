@@ -69,6 +69,11 @@ public class DokoGameController {
         }
 
         DokoGameResponse response = dokoGameService.createGame(request);
+        if (!response.getErrors().isEmpty()){
+            return ResponseEntity
+                    .status(HttpStatus.ALREADY_REPORTED)
+                    .body(response);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
