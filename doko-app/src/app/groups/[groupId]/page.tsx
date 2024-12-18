@@ -148,25 +148,25 @@ const GroupPage = ({ params }: {
 
             <div className="overflow-x-auto">
                 <table className="min-w-full table-auto bg-[#2A2A3C] shadow-md rounded-lg">
-                    <thead>
+                    <thead className="leading-none">
                         <tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-                            <th className="py-3 px-6 text-left"></th>
+                            <th className="px-6 text-left"></th>
                             {groupData.players.map((p) => {
-                                return <th key={p.id} className="py-3 px-6 text-center">{p.name}</th>;
+                                return <th key={p.id} className="px-6 text-center">{p.name}</th>;
                             })}
-                            <th className="py-3 px-6 text-left"></th>
-                            <th className="py-3 px-6 text-left"></th>
+                            <th className="px-6 text-left"></th>
+                            <th className="px-6 text-left"></th>
                         </tr>
 
                         <tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
-                            <th className="py-3 px-6 text-left">Datum</th>
+                            <th className="px-6 text-left">Datum</th>
 
                             {summedScores.map((score, index) => {
                                 return <GreenRedCellSum key={index} score={score} />
                             })}
 
-                            <th className="py-3 px-6 text-left">Ort</th>
-                            <th className="py-3 px-6 text-left">Action</th>
+                            <th className="px-6 text-left">Ort</th>
+                            <th className="px-6 text-left">Action</th>
                         </tr>
 
                     </thead>

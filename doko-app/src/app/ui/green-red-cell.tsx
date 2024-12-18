@@ -32,7 +32,7 @@ const GreenRedCell: React.FC<PlayerProps> = ({ score, party, isLead, isSolo }) =
 
     return (
         // <th className="py-3 px-6 text-lg text-center">
-        <th className={`py-3 px-6 text-lg text-center whitespace-nowrap`}>
+        <th className={`text-lg text-center whitespace-nowrap`}>
                 <span className={`${solo_border}`}>
                     {lead_emoji}
                     {' '}

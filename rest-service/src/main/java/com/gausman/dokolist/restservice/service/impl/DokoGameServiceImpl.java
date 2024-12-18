@@ -47,18 +47,38 @@ public class DokoGameServiceImpl implements DokoGameService {
         return dokoGameRepository.findByDokoSession_IdOrderByPlayedAsc(sessionId);
     }
 
+
     @Override
     public DokoGameResponse createGame(CreateDokoGameRequest request) {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        // Validations
-        //List<String> errors = new ArrayList<>();
 
+        // Validations
         DokoGame dokoGame = new DokoGame();
 
         // Create the response object with the game and initialize message lists
         DokoGameResponse response = new DokoGameResponse(dokoGame);
+
+        if (dokoSession.getNextDealer() != request.getDealer()){
+            response.getErrors().add("Spiel wurde bereits hinzugefügt, Daten wurden neu geladen!");
+            return response;
+        }
+
+        if (request.getSeatScores().size() > 4){
+
+            boolean isInactive = Optional.ofNullable(request.getSeatScores().get(dokoSession.getNextDealer()))
+                    .map(DokoGameSeat::getParty)
+                    .map(DokoParty.Inaktiv::equals)
+                    .orElse(false);
+
+            if (!isInactive){
+                response.getErrors().add("Dealer muss aussetzen bei mehr als 4 Spielern!");
+                return response;
+            }
+        }
+
+
 
         TransactionStatus status = null;
         if (request.isWriteToDb()) {
