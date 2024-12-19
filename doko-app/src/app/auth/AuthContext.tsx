@@ -41,7 +41,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const handleRegister = async (name: string, email: string, password: string) => {
     console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
-    const request = axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`, { name, email, password });
+    const request = axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`, { name, email, password });
 
     request
       .then((response) => {
@@ -62,7 +62,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const handleLogin = async (email: string, password: string) => {
-    const request = axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/authenticate`, { email, password });
+    const request = axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/authenticate`, { email, password });
 
     request
       .then((response) => {
