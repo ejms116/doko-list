@@ -49,30 +49,6 @@ const RegisterPage: React.FC = () => {
           console.log('Register Error error');
         });
 
-
-      // // Send HTTP request to the backend
-      // console.log(userData);
-      // const response = await fetch(`${apiBaseUrl}/auth/register`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(userData),
-      // });
-
-      // // Handle response
-      // if (response.ok) {
-      //   console.log(response);
-      //   const data = await response.json();
-      //   console.log(data);
-      //   setMessage({ type: "success", text: "Registrierung erfolgreich!" }); // Success message
-      //   router.push(`/dashboard`);
-      // } else {
-      //   const error = await response.json();
-      //   setMessage({ type: "error", text: error.message || "Registrierung fehlgeschlagen." });
-      // }
-
-
     } catch (err) {
       console.error(err);
       setMessage({ type: "error", text: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut." });
