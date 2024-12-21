@@ -14,7 +14,7 @@ import { Player } from "@/app/models/general/Player";
 import { Group } from "@/app/models/general/Group";
 
 import Spinner from "@/app/ui/Spinner";
-
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 import GroupPlayer from "./group-player-row";
 
 export type PlayerWithStatus = {
@@ -219,17 +219,17 @@ const GroupDetailPage = ({ params }: {
         <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
             {/* User Info Section */}
             <div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
+                {!newGroup &&
+                    <Link href={`/groups/${params.groupId}`}>
+                        <button className="bg-blue-600 text-white py-2 px-2 rounded hover:bg-blue-700">
+                            <ArrowLeftIcon className="h-5 w-5" />
+                        </button>
+                    </Link>}
                 <h2 className="text-2xl font-semibold text-gray-300">{newGroup ? "Neue Gruppe anlegen" : "Gruppe ändern"}</h2>
                 <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={handleSaveGroup}>
                     {newGroup ? "Speichern" : 'Änderungen speichern'}
                 </button>
 
-                {!newGroup &&
-                <Link href={`/groups/${params.groupId}`}>
-                    <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                        Abende anzeigen
-                    </button>
-                </Link>}
 
                 {error && <p className="text-red-500 mt-4">{error}</p>}
                 {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}

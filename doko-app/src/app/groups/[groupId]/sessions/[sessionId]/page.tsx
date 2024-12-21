@@ -40,6 +40,7 @@ import useApiClient from "@/app/auth/useApiClient";
 import { AuthContext } from "@/app/auth/AuthContext";
 import { useContext } from "react";
 
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 import LineChart from "@/app/ui/LineChart";
 import { ChartData, ChartDataset, ChartType, ChartOptions, DatasetController } from 'chart.js';
@@ -101,6 +102,8 @@ const SessionPage = ({ params }: {
 	const [modalSopoReDoppelkopf, setModalSopoReDoppelkopf] = useState<boolean[]>([false, false, false, false]);
 	const [modalSopoContraDoppelkopf, setModalSopoContraDoppelkopf] = useState<boolean[]>([false, false, false, false]);
 
+	const [showGraph, setShowGraph] = useState<boolean>(false);
+
 	const [gameResponse, setGameResponse] = useState<GameResponse | null>(null);
 
 	const generateNumberArray = (n: number): number[] => Array.from({ length: n + 1 }, (_, i) => i);
@@ -127,7 +130,7 @@ const SessionPage = ({ params }: {
 							dataset.data.map((value) => Math.abs(value as number))
 						) ?? []
 					)
-				) / 10 + 1 
+				) / 10 + 1
 			) * 10;
 
 		setMaxAbsValue(Math.max(20, val));
@@ -848,33 +851,27 @@ const SessionPage = ({ params }: {
 	const playedDate: Date = new Date(sessionData.played);
 
 	return (
-		<div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
-			{/* <h1>GroupId: {params.groupId}, SessionId: {params.sessionId} </h1>
-			<h1>List games...</h1> */}
-
-			{/* <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4"> */}
+		// <div className="min-h-screen bg-[#1E1E2C] text-gray-200 p-4">
+		<div className="h-[calc(100vh-3rem)] bg-[#1E1E2C] text-gray-200 p-4 overflow-hidden flex flex-col">
 			<div className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
-				<h2 className="text-2xl font-semibold text-gray-300">{`Doppelkopf bei ${sessionData.location} am ${playedDate.toLocaleString()}`}</h2>
 				<Link href={`/groups/${params.groupId}`}>
-					<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-						Zurück zur Gruppe
+					<button className="bg-blue-600 text-white py-2 px-2 rounded hover:bg-blue-700 flex items-center">
+						<ArrowLeftIcon className="h-5 w-5" />
 					</button>
 				</Link>
+				<h2 className="text-2xl font-semibold text-gray-300">{`Doppelkopf bei ${sessionData.location} am ${playedDate.toLocaleString()}`}</h2>
 
 				<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={openModalNewGame}>
 					Neues Spiel hinzufügen
 				</button>
 
-				{/* <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => alert("hi")}>
-						Alle Spiele neu berechnen
-					</button> */}
+				<button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" onClick={() => setShowGraph(!showGraph)}>
+					Toggle Graph
+				</button>
 			</div>
 
-			<div className="flex w-full h-screen">
-				{/* <div className="flex w-full h-screen"> */}
-				<div className="w-2/3 overflow-x-auto">
-
-					{/* <div className="w-2/3 flex-1 overflow-y-auto"> */}
+			<div className="h-screen flex flex-grow w-full overflow-y-auto">
+				<div className={`${showGraph ? 'w-2/3' : 'w-full'} overflow-x-auto overflow-y-auto`}>
 					<table className="border-collapse min-w-full table-auto bg-[#2A2A3C]">
 						<thead className="sticky top-0 bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
 							<tr className="bg-[#3B3B4D] text-gray-400 uppercase text-sm leading-normal">
@@ -919,13 +916,15 @@ const SessionPage = ({ params }: {
 						</tbody>
 					</table>
 				</div>
-				<div className="w-1/3 overflow-x-auto">
-					{!chartDataset ? (
-						<Spinner text="Lade Grafik..." />
-					) : (
-						<LineChart data={data} options={options} />
-					)}
-				</div>
+				{showGraph && (
+					<div className="w-1/3 overflow-x-auto">
+						{!chartDataset ? (
+							<Spinner text="Lade Grafik..." />
+						) : (
+							<LineChart data={data} options={options} />
+						)}
+					</div>
+				)}
 			</div>
 
 
