@@ -79,7 +79,7 @@ public class DokoSessionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(session);
     }
 
-    @DeleteMapping("/sessions/{id}")
+    @DeleteMapping("/sessions/{id}/delete")
     public ResponseEntity<String> deleteSession(
             @PathVariable Long id,
             HttpServletRequest httpServletRequest
