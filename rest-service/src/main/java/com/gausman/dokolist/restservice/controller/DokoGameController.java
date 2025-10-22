@@ -109,8 +109,7 @@ public class DokoGameController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @Transactional
-    @DeleteMapping("/games/{gameId}/delete")
+    @DeleteMapping("/games/{id}/delete")
     public ResponseEntity<?> delete(
             @PathVariable Long id,
             @RequestBody CreateDokoGameRequest request,
