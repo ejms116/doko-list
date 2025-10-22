@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -108,22 +109,27 @@ public class DokoGameController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @Transactional
     @DeleteMapping("/games/{gameId}/delete")
-    public ResponseEntity<?> delete(@PathVariable Long gameId, HttpServletRequest httpServletRequest){
-        Optional<DokoGame> dokoGame = dokoGameService.findById(gameId);
+    public ResponseEntity<?> delete(
+            @PathVariable Long id,
+            @RequestBody CreateDokoGameRequest request,
+            HttpServletRequest httpServletRequest){
+        Optional<DokoGame> dokoGame = dokoGameService.findById(id);
 
         if (dokoGame.isEmpty()){
             return ResponseEntity.notFound().build(); // 404
         }
-        boolean deleted = dokoGameService.deleteGame(gameId);
 
-        if (!isAuthorized(httpServletRequest, dokoGame.get().getDokoSession().getId())){
+        if (!isAuthorized(httpServletRequest, request.getSessionId())){
             DokoGameResponse dokoGameResponse = new DokoGameResponse(null);
             dokoGameResponse.getErrors().add("Spieler ist nicht Teil der Gruppe.");
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(dokoGameResponse);
         }
+
+        boolean deleted = dokoGameService.deleteGame(id);
 
         if (deleted){
             return ResponseEntity.noContent().build(); // 204
