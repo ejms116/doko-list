@@ -108,7 +108,7 @@ public class DokoGameController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @RequestMapping("/games/{gameId}")
+    @DeleteMapping("/games/{gameId}/delete")
     public ResponseEntity<?> delete(@PathVariable Long gameId, HttpServletRequest httpServletRequest){
         Optional<DokoGame> dokoGame = dokoGameService.findById(gameId);
 

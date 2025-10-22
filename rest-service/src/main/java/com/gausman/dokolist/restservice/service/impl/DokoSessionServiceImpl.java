@@ -81,10 +81,8 @@ public class DokoSessionServiceImpl implements DokoSessionService {
 
         // Delete all games belonging to this session
         dokoGameRepository.deleteAll(dokoGameRepository.findByDokoSession_IdOrderByPlayedAsc(id));
-
+        dokoGameRepository.flush(); // we need to flush otherwise the session is still referenced from the games table
         // Delete the session itself
         dokoSessionRepository.delete(session);
     }
-
-
 }
