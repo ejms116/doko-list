@@ -5,6 +5,7 @@ import com.gausman.dokolist.restservice.exception.SessionNotFoundException;
 import com.gausman.dokolist.restservice.model.entities.DokoGroup;
 import com.gausman.dokolist.restservice.model.entities.DokoPlayer;
 import com.gausman.dokolist.restservice.model.entities.DokoSession;
+import com.gausman.dokolist.restservice.repository.DokoGameRepository;
 import com.gausman.dokolist.restservice.repository.DokoGroupRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
@@ -24,6 +25,9 @@ public class DokoSessionServiceImpl implements DokoSessionService {
 
     @Autowired
     DokoSessionRepository dokoSessionRepository;
+
+    @Autowired
+    DokoGameRepository dokoGameRepository;
 
     @Autowired
     DokoPlayerRepository dokoPlayerRepository;
@@ -70,11 +74,16 @@ public class DokoSessionServiceImpl implements DokoSessionService {
     }
 
     @Override
+    @Transactional
     public void deleteSessionById(Long id) {
-        if (!dokoSessionRepository.existsById(id)) {
-            throw new SessionNotFoundException("Session with ID " + id + " not found.");
-        }
-        dokoSessionRepository.deleteById(id);
+        DokoSession session = dokoSessionRepository.findById(id)
+                .orElseThrow(() -> new SessionNotFoundException("Session with ID " + id + " not found."));
+
+        // Delete all games belonging to this session
+        dokoGameRepository.deleteAll(dokoGameRepository.findByDokoSession_IdOrderByPlayedAsc(id));
+
+        // Delete the session itself
+        dokoSessionRepository.delete(session);
     }
 
 
