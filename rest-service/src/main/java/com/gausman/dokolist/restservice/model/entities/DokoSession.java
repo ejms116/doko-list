@@ -17,6 +17,10 @@ public class DokoSession {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Version
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private Long version;
+
     @ManyToOne
     @JoinColumn(name = "group_id")
     private DokoGroup dokoGroup;

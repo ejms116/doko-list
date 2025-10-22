@@ -59,7 +59,6 @@ public class DokoSessionServiceImpl implements DokoSessionService {
         // keep the order of the playerIds input array and map it to the seat number
         // by using the index of the player in the request array
         for (DokoPlayer dokoPlayer: dokoPlayerSet){
-
             session.addSessionPlayer(dokoPlayer, request.getPlayerIds().indexOf(dokoPlayer.getId()), 0);
         }
         session.setDokoGroup(group);

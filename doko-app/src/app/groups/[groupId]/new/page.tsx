@@ -87,16 +87,19 @@ const NewSessionPage = ({ params }: { params: { groupId: string } }) => {
         // Validate location and selected players
         if (!location.trim()) {
             setError("Bitte Ort angeben.");
+            isRequesting.current = false;
             return;
         }
 
         if (selectedPlayers.length < 4) {
             setError("Bitte mindestens 4 Spieler auswählen.");
+            isRequesting.current = false;
             return;
         }
 
         if (selectedPlayers.length > 5) {
             setError("Bitte höchstens 5 Spieler auswählen.");
+            isRequesting.current = false;
             return;
         }
 

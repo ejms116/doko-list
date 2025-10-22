@@ -11,15 +11,15 @@ import com.gausman.dokolist.restservice.repository.DokoGameRepository;
 import com.gausman.dokolist.restservice.repository.DokoPlayerRepository;
 import com.gausman.dokolist.restservice.repository.DokoSessionRepository;
 import com.gausman.dokolist.restservice.service.DokoGameService;
-
-import com.gausman.dokolist.restservice.exception.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -38,6 +38,11 @@ public class DokoGameServiceImpl implements DokoGameService {
     DokoGameRepository dokoGameRepository;
 
     @Override
+    public Optional<DokoGame> findById(Long gameId) {
+        return dokoGameRepository.findById(gameId);
+    }
+
+    @Override
     public List<DokoGame> findAll() {
         return dokoGameRepository.findAll();
     }
@@ -47,21 +52,240 @@ public class DokoGameServiceImpl implements DokoGameService {
         return dokoGameRepository.findByDokoSession_IdOrderByPlayedAsc(sessionId);
     }
 
-
     @Override
-    public DokoGameResponse createGame(CreateDokoGameRequest request) {
+    public DokoGameResponse createGameTest(CreateDokoGameRequest request) {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-
-        // Validations
+        DokoGameResponse response = runValidations(request, dokoSession);
         DokoGame dokoGame = new DokoGame();
+        response.setDokoGame(dokoGame);
+        setValuesFromRequest(dokoGame, request);
+        dokoGame.setBock(dokoSession.useBock());
+
+        calculateWinnerAndScores(dokoGame);
+
+        if (response.getErrors().isEmpty()) {
+            response.getInfos().add("Spiel erfolgreich geprüft.");
+        }
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public DokoGameResponse createGameAndPersist(CreateDokoGameRequest request) {
+        DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        DokoGameResponse response = runValidations(request, dokoSession);
+        DokoGame dokoGame = new DokoGame();
+        response.setDokoGame(dokoGame);
+
+        setValuesFromRequest(dokoGame, request);
+        calculateWinnerAndScores(dokoGame);
+
+        if (response.getErrors().isEmpty()) {
+            response.getInfos().add("Spiel erfolgreich geprüft.");
+        } else {
+            return response;
+        }
+
+        dokoSession.updateNextDealer();
+
+        response.getDokoGame().setDokoSession(dokoSession);
+        response.getDokoGame().setBock(dokoSession.useBock());
+        response.getDokoGame().setMoreBock(request.isMoreBock());
+
+        if (request.isMoreBock()) {
+            dokoSession.addBock();
+        }
+
+        for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+            sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
+        }
+        // dokoSession: auto commit because of transactional annotation
+        dokoGameRepository.save(response.getDokoGame());
+
+        return response;
+    }
+
+    @Override
+    public DokoGameResponse updateGameTest(Long gameId, CreateDokoGameRequest request) {
+        // Retrieve existing game
+        DokoGame dokoGame = dokoGameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        // Retrieve associated session if any fields related to it need updating
+        DokoSession dokoSession = dokoGame.getDokoSession();
 
         // Create the response object with the game and initialize message lists
-        DokoGameResponse response = new DokoGameResponse(dokoGame);
+        DokoGameResponse response = runValidations(request, dokoSession);
+        response.setDokoGame(dokoGame);
+
+        // additional validations when changing games
+        // Bock
+        boolean changeBockToNoBock = dokoGame.isBock() && !request.isBock();
+        boolean changeNoBockToBock = !dokoGame.isBock() && request.isBock();
+
+        if (changeNoBockToBock) {
+            if (dokoSession.getBockRemaining() < 1){
+                response.getErrors().add("Spiel kann nicht in Bock geändert werden, kein Bock übrig.");
+            } else {
+                dokoGame.setBock(dokoSession.useBock());
+                response.getWarnings().add("Spiel wurde in Bock geändert.");
+            }
+        }
+        if (changeBockToNoBock){
+            dokoSession.addSingleBock();
+            response.getWarnings().add("Spiel ist nicht mehr Bock. Ein Bock-Spiel wird wieder hinzugefügt.");
+        }
+        dokoGame.setBock(request.isBock());
+
+        // Herz rum
+        boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
+        boolean changeNoHerzToHerz = !dokoGame.isMoreBock() && request.isMoreBock();
+
+        if (changeHerzToNoHerz){
+            if (dokoSession.getBockRemaining() < dokoSession.getSessionPlayers().size()){
+                response.getErrors().add("Bockrunde kann nicht aufgelöst werden, Bock-Spiele bereits verbraucht");
+            } else {
+                dokoSession.removeBock();
+                response.getWarnings().add("Vorrat an Bock-Spielen wird verringert.");
+            }
+        }
+
+        if (changeNoHerzToHerz){
+            dokoSession.addBock();
+            response.getWarnings().add("Es werden mehr Bock-Spiele angehängt.");
+
+        }
+
+        dokoGame.setMoreBock(request.isMoreBock());
+
+        // If there are any validation errors, throw a ValidationException with the list
+        if (response.getErrors().isEmpty()) {
+            response.getInfos().add("Spiel erfolgreich geprüft.");
+        } else {
+            return response;
+        }
+
+        Map<Integer,DokoGameSeat> seatMapCopy = new HashMap<>();
+
+        dokoGame.getSeatScores().forEach((key, seat) -> {
+            seatMapCopy.put(key, new DokoGameSeat(seat.getScore(), seat.getParty()));
+        });
+
+        // Update fields on dokoGame based on request
+        setValuesFromRequest(dokoGame, request);
+        calculateWinnerAndScores(dokoGame);
+
+        // update summed scores in session
+        for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+            sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
+                    - seatMapCopy.get(sp.getSeat()).getScore());
+        }
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public DokoGameResponse updateGameAndPersist(Long gameId, CreateDokoGameRequest request) {
+        // Retrieve existing game
+        DokoGame dokoGame = dokoGameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        // Retrieve associated session if any fields related to it need updating
+        DokoSession dokoSession = dokoGame.getDokoSession();
+
+        // Create the response object with the game and initialize message lists
+        DokoGameResponse response = runValidations(request, dokoSession);
+        response.setDokoGame(dokoGame);
+
+        // additional validations when changing games
+        // Bock
+        boolean changeBockToNoBock = dokoGame.isBock() && !request.isBock();
+        boolean changeNoBockToBock = !dokoGame.isBock() && request.isBock();
+
+        if (changeNoBockToBock) {
+            if (dokoSession.getBockRemaining() < 1){
+                response.getErrors().add("Spiel kann nicht in Bock geändert werden, kein Bock übrig.");
+            } else {
+                dokoGame.setBock(dokoSession.useBock());
+                response.getWarnings().add("Spiel wurde in Bock geändert.");
+            }
+        }
+        if (changeBockToNoBock){
+            dokoSession.addSingleBock();
+            response.getWarnings().add("Spiel ist nicht mehr Bock. Ein Bock-Spiel wird wieder hinzugefügt.");
+        }
+        dokoGame.setBock(request.isBock());
+
+        // Herz rum
+        boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
+        boolean changeNoHerzToHerz = !dokoGame.isMoreBock() && request.isMoreBock();
+
+        if (changeHerzToNoHerz){
+            if (dokoSession.getBockRemaining() < dokoSession.getSessionPlayers().size()){
+                response.getErrors().add("Bockrunde kann nicht aufgelöst werden, Bock-Spiele bereits verbraucht");
+            } else {
+                dokoSession.removeBock();
+                response.getWarnings().add("Vorrat an Bock-Spielen wird verringert.");
+            }
+        }
+
+        if (changeNoHerzToHerz){
+            dokoSession.addBock();
+            response.getWarnings().add("Es werden mehr Bock-Spiele angehängt.");
+
+        }
+
+        dokoGame.setMoreBock(request.isMoreBock());
+
+        // If there are any validation errors, throw a ValidationException with the list
+        if (response.getErrors().isEmpty()) {
+            response.getInfos().add("Spiel erfolgreich geprüft.");
+        } else {
+            return response;
+        }
+
+        Map<Integer,DokoGameSeat> seatMapCopy = new HashMap<>();
+
+        dokoGame.getSeatScores().forEach((key, seat) -> {
+            seatMapCopy.put(key, new DokoGameSeat(seat.getScore(), seat.getParty()));
+        });
+
+        // Update fields on dokoGame based on request
+        setValuesFromRequest(dokoGame, request);
+        calculateWinnerAndScores(dokoGame);
+
+        // update summed scores in session
+        for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
+            sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
+                    - seatMapCopy.get(sp.getSeat()).getScore());
+        }
+        // dokoSession: auto commit because of transactional annotation
+        dokoGameRepository.save(response.getDokoGame());
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public Boolean deleteGame(Long gameId) {
+        if (!dokoGameRepository.existsById(gameId)) {
+            return false;
+        }
+        dokoGameRepository.deleteById(gameId);
+        return true;
+    }
+
+
+    private DokoGameResponse runValidations(CreateDokoGameRequest request, DokoSession dokoSession){
+        DokoGameResponse response = new DokoGameResponse(null);
+
 
         if (dokoSession.getNextDealer() != request.getDealer()){
-            response.getErrors().add("Spiel wurde bereits hinzugefügt, Daten wurden neu geladen!");
+            response.getErrors().add("Dealer passt nicht zum nächsten Dealer in der Session");
             return response;
         }
 
@@ -73,173 +297,18 @@ public class DokoGameServiceImpl implements DokoGameService {
                     .orElse(false);
 
             if (!isInactive){
-                response.getErrors().add("Dealer muss aussetzen bei mehr als 4 Spielern!");
+                response.getErrors().add("Dealer muss aussetzen bei mehr als 4 Spielern");
                 return response;
             }
         }
 
-
-
-        TransactionStatus status = null;
-        if (request.isWriteToDb()) {
-            status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-        }
-
-        try {
-            runDefaultValidations(response, dokoGame, request);
-
-            // If there are any validation errors, throw a ValidationException with the list
-            if (!response.getErrors().isEmpty()) {
-                throw new ValidationException(response);
-            } else {
-                response.getInfos().add("Spiel erfolgreich geprüft.");
-            }
-
-
-            dokoSession.updateNextDealer();
-
-            setValuesFromRequest(dokoGame, request);
-            dokoGame.setDokoSession(dokoSession);
-            dokoGame.setBock(dokoSession.useBock());
-            dokoGame.setMoreBock(request.isMoreBock());
-
-            if (request.isMoreBock()) {
-                dokoSession.addBock();
-            }
-
-            calculateWinnerAndScores(dokoGame);
-
-            // Only commit if writeToDb is true
-            if (request.isWriteToDb() && status != null) {
-                for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
-                    sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore());
-                }
-
-                dokoSessionRepository.save(dokoSession);
-                dokoGameRepository.save(dokoGame);
-                transactionManager.commit(status);
-            }
-        } catch (Exception ex) {
-            if (status != null) {
-                transactionManager.rollback(status);
-            }
-            throw ex;
-        }
+        runDefaultValidations(response, request); // TODO put content of runDefaultValidations Here
 
         return response;
     }
 
-    @Override
-    public DokoGameResponse updateGame(Long gameId, CreateDokoGameRequest request) {
-        // Retrieve existing game
-        DokoGame dokoGame = dokoGameRepository.findById(gameId)
-                .orElseThrow(() -> new RuntimeException("Game not found"));
+    private void runDefaultValidations(DokoGameResponse response, CreateDokoGameRequest request){
 
-        // Retrieve associated session if any fields related to it need updating
-        DokoSession dokoSession = dokoGame.getDokoSession();
-
-        // Create the response object with the game and initialize message lists
-        DokoGameResponse response = new DokoGameResponse(dokoGame);
-
-        // Validations
-        //List<String> errors = new ArrayList<>();
-
-        TransactionStatus status = null;
-        if (request.isWriteToDb()) {
-            status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-        }
-        try {
-            runDefaultValidations(response, dokoGame, request);
-
-            // Bock
-            boolean changeBockToNoBock = dokoGame.isBock() && !request.isBock();
-            boolean changeNoBockToBock = !dokoGame.isBock() && request.isBock();
-
-            if (changeNoBockToBock) {
-                if (dokoSession.getBockRemaining() < 1){
-                    response.getErrors().add("Spiel kann nicht in Bock geändert werden, kein Bock übrig.");
-                } else {
-                    dokoGame.setBock(dokoSession.useBock());
-                    response.getWarnings().add("Spiel wurde in Bock geändert.");
-                }
-            }
-            if (changeBockToNoBock){
-                dokoSession.addSingleBock();
-                response.getWarnings().add("Spiel ist nicht mehr Bock. Ein Bock-Spiel wird wieder hinzugefügt.");
-            }
-            dokoGame.setBock(request.isBock());
-
-            // Herz rum
-            boolean changeHerzToNoHerz = dokoGame.isMoreBock() && !request.isMoreBock();
-            boolean changeNoHerzToHerz = !dokoGame.isMoreBock() && request.isMoreBock();
-
-            if (changeHerzToNoHerz){
-                if (dokoSession.getBockRemaining() < dokoSession.getSessionPlayers().size()){
-                    response.getErrors().add("Bockrunde kann nicht aufgelöst werden, Bock-Spiele bereits verbraucht");
-                } else {
-                    dokoSession.removeBock();
-                    response.getWarnings().add("Vorrat an Bock-Spielen wird verringert.");
-                }
-            }
-
-            if (changeNoHerzToHerz){
-                dokoSession.addBock();
-                response.getWarnings().add("Es werden mehr Bock-Spiele angehängt.");
-
-            }
-
-            dokoGame.setMoreBock(request.isMoreBock());
-
-            // If there are any validation errors, throw a ValidationException with the list
-            if (!response.getErrors().isEmpty()) {
-                throw new ValidationException(response);
-            } else {
-                response.getInfos().add("Spiel erfolgreich geprüft.");
-            }
-
-
-
-            Map<Integer,DokoGameSeat> seatMapCopy = new HashMap<>();
-
-            if (request.isWriteToDb() && status != null) {
-                dokoGame.getSeatScores().forEach((key, seat) -> {
-                    seatMapCopy.put(key, new DokoGameSeat(seat.getScore(), seat.getParty()));
-                });
-            }
-
-
-            // Update fields on dokoGame based on request
-            setValuesFromRequest(dokoGame, request);
-
-            calculateWinnerAndScores(dokoGame);
-
-            // Only commit if writeToDb is true
-            if (request.isWriteToDb() && status != null) {
-                // update summed scores in session
-                for (DokoSessionPlayer sp : dokoSession.getSessionPlayers()) {
-                    sp.setScore(sp.getScore() + request.getSeatScores().get(sp.getSeat()).getScore()
-                            - seatMapCopy.get(sp.getSeat()).getScore());
-
-                }
-
-                dokoSessionRepository.save(dokoSession);
-                dokoGameRepository.save(dokoGame);
-                transactionManager.commit(status);
-
-
-            }
-
-        } catch (Exception ex) {
-            if (status != null) {
-                transactionManager.rollback(status);
-            }
-            throw ex;
-        }
-
-        return response;
-    }
-
-    private void runDefaultValidations(DokoGameResponse response, DokoGame dokoGame, CreateDokoGameRequest request){
         Map<DokoParty, Integer> partyCount = new HashMap<>();
         partyCount.put(DokoParty.Re, 0);
         partyCount.put(DokoParty.Contra, 0);
@@ -294,8 +363,8 @@ public class DokoGameServiceImpl implements DokoGameService {
 
         }
 
-        if (request.getDokoGameType().equals(DokoGameType.NORMAL) && (partyCount.get(DokoParty.Re) != 2)){
-            response.getErrors().add("Bei Normalspiel müssen genau zwei Spieler Re sein.");
+        if (request.getDokoGameType().equals(DokoGameType.NORMAL) && ((partyCount.get(DokoParty.Re) != 2 || (partyCount.get(DokoParty.Contra) != 2)))){
+            response.getErrors().add("Bei Normalspiel müssen genau je zwei Spieler Re/Contra sein.");
         }
 
         if (isSolo(request) && request.isMoreBock()){

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -67,14 +68,21 @@ public class DokoGameController {
                     .status(HttpStatus.FORBIDDEN)
                     .body(dokoGameResponse);
         }
-
-        DokoGameResponse response = dokoGameService.createGame(request);
+        DokoGameResponse response;
+        if (request.isWriteToDb()){
+            response = dokoGameService.createGameAndPersist(request);
+        } else {
+            response = dokoGameService.createGameTest(request);
+        }
         if (!response.getErrors().isEmpty()){
             return ResponseEntity
-                    .status(HttpStatus.ALREADY_REPORTED)
+                    .status(HttpStatus.BAD_REQUEST)
                     .body(response);
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        if (request.isWriteToDb()){
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/games/{gameId}/update")
@@ -91,9 +99,37 @@ public class DokoGameController {
                     .status(HttpStatus.FORBIDDEN)
                     .body(dokoGameResponse);
         }
-
-        DokoGameResponse response = dokoGameService.updateGame(gameId, request);
+        DokoGameResponse response;
+        if (request.isWriteToDb()){
+            response = dokoGameService.updateGameAndPersist(gameId, request);
+        } else {
+            response = dokoGameService.updateGameTest(gameId, request);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping("/games/{gameId}")
+    public ResponseEntity<?> delete(@PathVariable Long gameId, HttpServletRequest httpServletRequest){
+        Optional<DokoGame> dokoGame = dokoGameService.findById(gameId);
+
+        if (dokoGame.isEmpty()){
+            return ResponseEntity.notFound().build(); // 404
+        }
+        boolean deleted = dokoGameService.deleteGame(gameId);
+
+        if (!isAuthorized(httpServletRequest, dokoGame.get().getDokoSession().getId())){
+            DokoGameResponse dokoGameResponse = new DokoGameResponse(null);
+            dokoGameResponse.getErrors().add("Spieler ist nicht Teil der Gruppe.");
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(dokoGameResponse);
+        }
+
+        if (deleted){
+            return ResponseEntity.noContent().build(); // 204
+        } else {
+            return ResponseEntity.notFound().build(); // 404
+        }
     }
 
     private boolean isAuthorized(HttpServletRequest httpServletRequest, Long sessionId){
