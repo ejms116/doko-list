@@ -21,7 +21,7 @@ import java.util.Map;
 @Setter
 public class DokoGame {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

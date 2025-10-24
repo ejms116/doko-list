@@ -78,8 +78,10 @@ public class DokoSessionServiceImpl implements DokoSessionService {
     public void deleteSessionById(Long id) {
         DokoSession session = dokoSessionRepository.findById(id)
                 .orElseThrow(() -> new SessionNotFoundException("Session with ID " + id + " not found."));
-
+        DokoGroup group = session.getDokoGroup();
+        group.setSessionCount(group.getSessionCount() - 1);
         // Delete the session and all related games
         dokoSessionRepository.delete(session);
+
     }
 }
