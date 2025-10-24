@@ -79,10 +79,7 @@ public class DokoSessionServiceImpl implements DokoSessionService {
         DokoSession session = dokoSessionRepository.findById(id)
                 .orElseThrow(() -> new SessionNotFoundException("Session with ID " + id + " not found."));
 
-        // Delete all games belonging to this session
-        dokoGameRepository.deleteAll(dokoGameRepository.findByDokoSession_IdOrderByPlayedAsc(id));
-        dokoGameRepository.flush(); // we need to flush otherwise the session is still referenced from the games table
-        // Delete the session itself
+        // Delete the session and all related games
         dokoSessionRepository.delete(session);
     }
 }

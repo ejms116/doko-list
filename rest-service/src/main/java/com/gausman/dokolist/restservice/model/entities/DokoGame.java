@@ -1,5 +1,6 @@
 package com.gausman.dokolist.restservice.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gausman.dokolist.restservice.dto.CreateDokoSonderpunkt;
 import com.gausman.dokolist.restservice.model.enums.DokoGameType;
@@ -25,7 +26,7 @@ public class DokoGame {
 
     @ManyToOne
     @JoinColumn(name = "session_id")
-    @JsonIgnore
+    @JsonBackReference
     private DokoSession dokoSession;
 
     @CreationTimestamp

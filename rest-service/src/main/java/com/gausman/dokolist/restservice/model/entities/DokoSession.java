@@ -1,5 +1,6 @@
 package com.gausman.dokolist.restservice.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,10 @@ public class DokoSession {
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("seat ASC")
     private List<DokoSessionPlayer> sessionPlayers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "dokoSession", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<DokoGame> games;
 
     @Column(name = "next_dealer", nullable = false, columnDefinition = "integer default 0")
     private int nextDealer;

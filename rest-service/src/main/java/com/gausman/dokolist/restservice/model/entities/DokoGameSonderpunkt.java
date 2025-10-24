@@ -1,6 +1,6 @@
 package com.gausman.dokolist.restservice.model.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.gausman.dokolist.restservice.model.enums.DokoParty;
 import com.gausman.dokolist.restservice.model.enums.DokoSonderpunktType;
 import jakarta.persistence.*;
@@ -17,7 +17,7 @@ public class DokoGameSonderpunkt {
 
     @ManyToOne
     @JoinColumn(name = "gameId", nullable = false)
-    @JsonIgnore
+    @JsonBackReference
     private DokoGame dokoGame;
 
     private DokoParty dokoParty;
