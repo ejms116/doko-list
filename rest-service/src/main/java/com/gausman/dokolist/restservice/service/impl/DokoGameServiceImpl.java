@@ -57,8 +57,11 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        DokoGameResponse response = runValidations(request, dokoSession);
         DokoGame dokoGame = new DokoGame();
+        DokoGameResponse response = new DokoGameResponse(dokoGame);
+        runValidationsNewGame(request, response, dokoSession);
+        runDefaultValidations(response, request);
+
         response.setDokoGame(dokoGame);
         setValuesFromRequest(dokoGame, request);
         dokoGame.setBock(dokoSession.useBock());
@@ -78,9 +81,10 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        DokoGameResponse response = runValidations(request, dokoSession);
         DokoGame dokoGame = new DokoGame();
-        response.setDokoGame(dokoGame);
+        DokoGameResponse response = new DokoGameResponse(dokoGame);
+        runValidationsNewGame(request, response, dokoSession);
+        runDefaultValidations(response, request);
 
         setValuesFromRequest(dokoGame, request);
         calculateWinnerAndScores(dokoGame);
@@ -120,8 +124,9 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoGame.getDokoSession();
 
         // Create the response object with the game and initialize message lists
-        DokoGameResponse response = runValidations(request, dokoSession);
+        DokoGameResponse response = new DokoGameResponse(dokoGame);
         response.setDokoGame(dokoGame);
+        runDefaultValidations(response, request);
 
         // additional validations when changing games
         // Bock
@@ -199,8 +204,9 @@ public class DokoGameServiceImpl implements DokoGameService {
         DokoSession dokoSession = dokoGame.getDokoSession();
 
         // Create the response object with the game and initialize message lists
-        DokoGameResponse response = runValidations(request, dokoSession);
+        DokoGameResponse response = new DokoGameResponse(dokoGame);
         response.setDokoGame(dokoGame);
+        runDefaultValidations(response, request);
 
         // additional validations when changing games
         // Bock
@@ -280,13 +286,10 @@ public class DokoGameServiceImpl implements DokoGameService {
     }
 
 
-    private DokoGameResponse runValidations(CreateDokoGameRequest request, DokoSession dokoSession){
-        DokoGameResponse response = new DokoGameResponse(null);
-
-
+    private void runValidationsNewGame(CreateDokoGameRequest request, DokoGameResponse response, DokoSession dokoSession){
         if (dokoSession.getNextDealer() != request.getDealer()){
             response.getErrors().add("Dealer passt nicht zum nächsten Dealer in der Session");
-            return response;
+            return;
         }
 
         if (request.getSeatScores().size() > 4){
@@ -298,13 +301,8 @@ public class DokoGameServiceImpl implements DokoGameService {
 
             if (!isInactive){
                 response.getErrors().add("Dealer muss aussetzen bei mehr als 4 Spielern");
-                return response;
             }
         }
-
-        runDefaultValidations(response, request); // TODO put content of runDefaultValidations Here
-
-        return response;
     }
 
     private void runDefaultValidations(DokoGameResponse response, CreateDokoGameRequest request){
